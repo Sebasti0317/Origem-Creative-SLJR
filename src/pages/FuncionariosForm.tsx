@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { supabase, getCurrentCentroId } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
 import { X, Save } from 'lucide-react'
+import { Avatar } from '../components/ui/Avatar'
 
 export default function FuncionariosForm({ funcionario, onCancel }: { funcionario?: any, onCancel: () => void }) {
   const queryClient = useQueryClient()
@@ -37,6 +38,7 @@ export default function FuncionariosForm({ funcionario, onCancel }: { funcionari
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
+      const centro_id = await getCurrentCentroId()
       const payload = {
         nome_completo: data.nome_completo,
         cargo: data.cargo,
@@ -50,6 +52,7 @@ export default function FuncionariosForm({ funcionario, onCancel }: { funcionari
         data_nascimento: data.data_nascimento,
         numero_documento: data.numero_documento,
         tipo_documento: data.tipo_documento,
+        centro_id,
         updated_at: new Date().toISOString()
       }
 
@@ -73,7 +76,10 @@ export default function FuncionariosForm({ funcionario, onCancel }: { funcionari
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-dark-800 rounded-2xl shadow-2xl w-full max-w-2xl border border-dark-600 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-dark-600 sticky top-0 bg-dark-800 z-10">
-          <h2 className="text-xl font-bold text-white">{funcionario ? 'Editar Funcionário' : 'Novo Funcionário'}</h2>
+          <div className="flex items-center gap-3">
+            <Avatar name={funcionario?.nome_completo || 'Novo Funcionário'} size={32} />
+            <h2 className="text-xl font-bold text-white">{funcionario ? 'Editar Funcionário' : 'Novo Funcionário'}</h2>
+          </div>
           <button onClick={onCancel} className="p-2 hover:bg-dark-600 rounded-lg text-slate-400 hover:text-white transition">
             <X size={20} />
           </button>
@@ -89,8 +95,6 @@ export default function FuncionariosForm({ funcionario, onCancel }: { funcionari
                 <input {...register('nome_completo', { required: 'Obrigatório' })} className="input-field" />
                 {errors.nome_completo && <p className="text-red-400 text-xs mt-1">{errors.nome_completo.message as string}</p>}
               </div>
-
-              {/* NOVOS CAMPOS: Data Nascimento e Documento */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Data de Nascimento</label>
                 <input type="date" {...register('data_nascimento')} className="input-field" />

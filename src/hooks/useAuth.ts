@@ -1,76 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-
-export type UserRole = 'admin' | 'coordenador' | 'assistente' | null
 
 export function useAuth() {
   const [user, setUser] = useState<any>(null)
-  const [role, setRole] = useState<UserRole>(null)
+  const [role, setRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let mounted = true
-    let timeout: number | undefined
-
-    const loadAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (mounted && session?.user) {
-          setUser(session.user)
-          const { data } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .single()
-          setRole(data?.role as UserRole)
-          console.log('✅ Auth carregado | Role:', data?.role)
-        }
-      } catch (e) {
-        console.warn('⚠️ Falha ao carregar auth:', e)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    loadAuth()
-
-    // 🔒 Segurança: nunca fica preso > 3 segundos
-    timeout = window.setTimeout(() => {
-      if (mounted) {
-        console.warn('⏱️ Timeout de auth. Forçando estado pronto.')
-        setLoading(false)
-      }
-    }, 3000)
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      if (session?.user) {
-        setUser(session.user)
-        supabase.from('user_roles').select('role').eq('user_id', session.user.id).single()
-          .then(({ data }) => setRole(data?.role as UserRole))
-      } else {
-        setUser(null)
-        setRole(null)
-      }
-      setLoading(false)
-      if (timeout) clearTimeout(timeout)
+    // Ver sessão atual
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchRole(session.user.id)
+      else setLoading(false)
     })
 
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-      if (timeout) clearTimeout(timeout)
-    }
+    // Escutar mudanças
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchRole(session.user.id)
+      else { setRole(null); setLoading(false) }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
-    window.location.reload()
+  async function fetchRole(userId: string) {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single()
+    setRole(data?.role || null)
+    setLoading(false)
   }
 
-  const hasRole = (allowed: UserRole | UserRole[]) => {
-    if (!role) return false
-    return Array.isArray(allowed) ? allowed.includes(role) : role === allowed
+  function hasRole(roles: string[]) {
+    return role ? roles.includes(role) : false
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    setUser(null)
+    setRole(null)
   }
 
   return { user, role, loading, signOut, hasRole }

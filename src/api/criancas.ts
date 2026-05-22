@@ -30,9 +30,15 @@ export interface CriancaFormData {
   data_saida?: string
 }
 
-export async function fetchCriancas(page = 0, pageSize = 10, search = '', estado = '') {
-  const from = page * pageSize
-  const to = from + pageSize - 1
+export async function fetchCriancas() {
+  const { data, error } = await supabase
+    .from('criancas')
+    .select('id, nome_completo, data_nascimento, estado, genero, encarregado_nome, centro_id') // ✅ Apenas o necessário
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
 
   // Constrói a query base
   let query = supabase

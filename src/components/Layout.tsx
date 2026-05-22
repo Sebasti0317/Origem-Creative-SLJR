@@ -118,37 +118,57 @@ export default function Layout({ children, activeTab, onNavigate }: {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="glass px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0 z-30 border-b border-dark-600">
-          <div className="flex items-center gap-3">
-            <button className="lg:hidden p-2 hover:bg-dark-600 rounded-lg" onClick={() => setMobileMenuOpen(true)}>
-              <Menu size={20} className="text-slate-300" />
-            </button>
-            <div className="hidden sm:flex items-center bg-dark-700 rounded-lg px-3 py-1.5 border border-dark-600">
-              <Search size={16} className="text-slate-500 mr-2" />
-              <input 
-                type="text" 
-                placeholder="Pesquisar..." 
-                className="bg-transparent text-sm text-slate-200 placeholder-slate-500 outline-none w-48"
-              />
-            </div>
-          </div>
+        import { useState } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import { Menu, Bell, LogOut } from 'lucide-react'
+import { APP_CONFIG } from '../config/appConfig'
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const { user, role, signOut } = useAuth()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  return (
+    <div className="min-h-screen bg-dark-800 text-slate-200 flex">
+      {/* Sidebar simplificada */}
+      <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-dark-900 border-r border-dark-700 transform transition-transform duration-200 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-4 border-b border-dark-700 flex items-center gap-3">
+          {APP_CONFIG.logo ? (
+            <img src={APP_CONFIG.logo} alt="Logo" className="h-8 w-8 object-contain" />
+          ) : (
+            <div className="h-8 w-8 bg-brand-500 rounded-lg flex items-center justify-center font-bold text-white">OC</div>
+          )}
+          <span className="font-bold text-white text-sm truncate">{APP_CONFIG.name}</span>
+        </div>
+        {/* ... mantém o resto do teu menu de navegação igual ... */}
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 bg-dark-900/50 backdrop-blur border-b border-dark-700 flex items-center justify-between px-4 sticky top-0 z-30">
+          <button className="lg:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <Menu size={20} />
+          </button>
           
-          <div className="flex items-center gap-3">
-            <button className="relative p-2 hover:bg-dark-600 rounded-lg transition">
-              <Bell size={20} className="text-slate-400" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="flex items-center gap-3 pl-3 border-l border-dark-600">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white truncate max-w-[150px]">{user.email}</p>
-                <p className="text-xs text-slate-400 capitalize">{role || 'Utilizador'}</p>
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-dark-700 rounded-lg"><Bell size={18} /></button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-sm font-bold">
+                {user?.email?.charAt(0).toUpperCase()}
               </div>
-              <div className="w-9 h-9 bg-brand-500 rounded-full flex items-center justify-center font-semibold text-white text-sm shadow-lg shadow-brand-500/30">
-                {user.email?.charAt(0).toUpperCase() || 'U'}
-              </div>
+              <button onClick={() => signOut()} className="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition">
+                <LogOut size={18} />
+              </button>
             </div>
           </div>
         </header>
+        
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
 
         {/* Page Content */}
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">

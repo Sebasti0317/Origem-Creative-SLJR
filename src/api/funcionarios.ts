@@ -14,11 +14,15 @@ export interface Funcionario {
   updated_at: string
 }
 
-export async function fetchFuncionarios(search = '', estado = '') {
-  let query = supabase
+export async function fetchfuncionarios() {
+  const { data, error } = await supabase
     .from('funcionarios')
-    .select('*', { count: 'exact' })
-    .order('nome_completo', { ascending: true })
+    .select('id, nome_completo, data_nascimento, estado, genero, encarregado_nome, centro_id') // ✅ Apenas o necessário
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
 
   if (search) query = query.ilike('nome_completo', '%' + search + '%')
   if (estado) query = query.eq('estado', estado)
