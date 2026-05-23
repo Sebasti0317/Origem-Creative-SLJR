@@ -17,34 +17,19 @@ export interface Crianca {
 }
 
 export async function getCriancas() {
-  const { data, error } = await supabase
-    .from('criancas')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('criancas').select('*').order('created_at', { ascending: false })
   if (error) throw error
   return data || []
 }
 
 export async function createCrianca(payload: Omit<Crianca, 'id' | 'created_at' | 'updated_at'>) {
-  const { data, error } = await supabase
-    .from('criancas')
-    .insert({ ...payload, created_at: new Date().toISOString() })
-    .select()
+  const { data, error } = await supabase.from('criancas').insert({ ...payload, created_at: new Date().toISOString() }).select()
   if (error) throw error
   return data[0]
 }
 
 export async function updateCrianca(id: string, payload: Partial<Crianca>) {
-  const { data, error } = await supabase
-    .from('criancas')
-    .update({ ...payload, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
+  const { data, error } = await supabase.from('criancas').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id).select()
   if (error) throw error
   return data[0]
-}
-
-export async function deleteCrianca(id: string) {
-  const { error } = await supabase.from('criancas').delete().eq('id', id)
-  if (error) throw error
 }
