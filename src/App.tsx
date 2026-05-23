@@ -5,6 +5,7 @@ import { useAuth } from './hooks/useAuth'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Criancas from './pages/Criancas'
+import Funcionarios from './pages/Funcionarios'
 
 const queryClient = new QueryClient()
 
@@ -25,14 +26,16 @@ function AppContent() {
   }
   
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'dashboard', label: 'Dashboard', icon: '' },
     { id: 'criancas', label: 'Crianças', icon: '👶' },
+    { id: 'funcionarios', label: 'Funcionários', icon: '👥' },
   ]
   
   const renderPage = () => {
     switch(activePage) {
       case 'dashboard': return <Dashboard />
       case 'criancas': return <Criancas />
+      case 'funcionarios': return <Funcionarios />
       default: return <Dashboard />
     }
   }
@@ -40,48 +43,50 @@ function AppContent() {
   return (
     <div style={{minHeight: '100vh', background: '#0f172a', color: '#e2e8f0', display: 'flex'}}>
       {/* Sidebar */}
-      <aside style={{width: '250px', background: '#1e293b', borderRight: '1px solid #334155', padding: '24px 0'}}>
-        <h1 style={{fontSize: '20px', fontWeight: 'bold', padding: '0 24px 24px', margin: 0, color: '#6366f1'}}>Origem Creative SLJR</h1>
+      <aside style={{width: '250px', background: '#1e293b', borderRight: '1px solid #334155', padding: '24px 0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+        <div>
+          <h1 style={{fontSize: '20px', fontWeight: 'bold', padding: '0 24px 24px', margin: 0, color: '#6366f1'}}>Origem Creative SLJR</h1>
+          
+          <nav>
+            {menuItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActivePage(item.id)}
+                style={{
+                  width: '100%',
+                  padding: '12px 24px',
+                  background: activePage === item.id ? '#6366f1' : 'transparent',
+                  color: activePage === item.id ? 'white' : '#94a3b8',
+                  border: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (activePage !== item.id) {
+                    e.currentTarget.style.background = '#334155'
+                    e.currentTarget.style.color = '#e2e8f0'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activePage !== item.id) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = '#94a3b8'
+                  }
+                }}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
         
-        <nav>
-          {menuItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActivePage(item.id)}
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                background: activePage === item.id ? '#6366f1' : 'transparent',
-                color: activePage === item.id ? 'white' : '#94a3b8',
-                border: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '15px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (activePage !== item.id) {
-                  e.target.style.background = '#334155'
-                  e.target.style.color = '#e2e8f0'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activePage !== item.id) {
-                  e.target.style.background = 'transparent'
-                  e.target.style.color = '#94a3b8'
-                }
-              }}
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-        
-        <div style={{position: 'absolute', bottom: '24px', left: '24px', right: '24px'}}>
+        <div style={{padding: '0 24px'}}>
           <button 
             onClick={() => signOut()}
             style={{
