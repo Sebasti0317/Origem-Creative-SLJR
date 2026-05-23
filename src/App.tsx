@@ -26,7 +26,7 @@ function AppContent() {
   }
   
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'criancas', label: 'Crianças', icon: '👶' },
     { id: 'funcionarios', label: 'Funcionários', icon: '👥' },
   ]

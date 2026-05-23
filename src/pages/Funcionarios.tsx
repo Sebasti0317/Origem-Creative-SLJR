@@ -8,6 +8,9 @@ interface Funcionario {
   email: string
   telefone: string
   dataAdmissao: string
+  dataNascimento: string
+  numeroDocumento: string
+  morada: string
 }
 
 export default function Funcionarios() {
@@ -18,7 +21,10 @@ export default function Funcionarios() {
     cargo: 'Educador',
     email: '',
     telefone: '',
-    dataAdmissao: new Date().toISOString().split('T')[0]
+    dataAdmissao: new Date().toISOString().split('T')[0],
+    dataNascimento: '',
+    numeroDocumento: '',
+    morada: ''
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,13 +41,16 @@ export default function Funcionarios() {
       cargo: 'Educador',
       email: '',
       telefone: '',
-      dataAdmissao: new Date().toISOString().split('T')[0]
+      dataAdmissao: new Date().toISOString().split('T')[0],
+      dataNascimento: '',
+      numeroDocumento: '',
+      morada: ''
     })
     setShowForm(false)
     toast.success('Funcionário registado com sucesso!')
   }
 
-  const cargos = ['Diretor(a)', 'Educador(a)', 'Auxiliar', 'Cozinheiro(a)', 'Motorista', 'Técnico(a)']
+  const cargos = ['Diretor(a)', 'Educador(a)', 'Auxiliar', 'Cozinheiro(a)', 'Motorista', 'Técnico(a)', 'Segurança']
 
   return (
     <div>
@@ -74,8 +83,11 @@ export default function Funcionarios() {
         }}>
           <h3 style={{marginTop: 0, marginBottom: '24px', fontSize: '20px'}}>Registar Novo Funcionário</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px'}}>
-              <div>
+            
+            {/* Dados Pessoais */}
+            <h4 style={{color: '#94a3b8', marginBottom: '12px', marginTop: 0}}>Dados Pessoais</h4>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px'}}>
+              <div style={{gridColumn: 'span 2'}}>
                 <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Nome Completo *</label>
                 <input
                   type="text"
@@ -94,7 +106,67 @@ export default function Funcionarios() {
                 />
               </div>
               <div>
-                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Cargo / Função *</label>
+                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Data Nascimento *</label>
+                <input
+                  type="date"
+                  required
+                  value={formData.dataNascimento}
+                  onChange={(e) => setFormData({...formData, dataNascimento: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#e2e8f0',
+                    fontSize: '15px'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px'}}>
+              <div>
+                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Nº Documento (BI/CC)</label>
+                <input
+                  type="text"
+                  value={formData.numeroDocumento}
+                  onChange={(e) => setFormData({...formData, numeroDocumento: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#e2e8f0',
+                    fontSize: '15px'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Morada</label>
+                <input
+                  type="text"
+                  value={formData.morada}
+                  onChange={(e) => setFormData({...formData, morada: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#e2e8f0',
+                    fontSize: '15px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Dados Profissionais */}
+            <h4 style={{color: '#94a3b8', marginBottom: '12px', marginTop: '24px', borderTop: '1px solid #334155', paddingTop: '20px'}}>Dados Profissionais</h4>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px'}}>
+              <div>
+                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Cargo / Função</label>
                 <select
                   value={formData.cargo}
                   onChange={(e) => setFormData({...formData, cargo: e.target.value})}
@@ -111,9 +183,26 @@ export default function Funcionarios() {
                   {cargos.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
+              <div>
+                <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Data de Admissão</label>
+                <input
+                  type="date"
+                  value={formData.dataAdmissao}
+                  onChange={(e) => setFormData({...formData, dataAdmissao: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#e2e8f0',
+                    fontSize: '15px'
+                  }}
+                />
+              </div>
             </div>
 
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px'}}>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px'}}>
               <div>
                 <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Email</label>
                 <input
@@ -148,24 +237,6 @@ export default function Funcionarios() {
                   }}
                 />
               </div>
-            </div>
-
-            <div style={{marginBottom: '24px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: '#94a3b8'}}>Data de Admissão</label>
-              <input
-                type="date"
-                value={formData.dataAdmissao}
-                onChange={(e) => setFormData({...formData, dataAdmissao: e.target.value})}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  background: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '8px',
-                  color: '#e2e8f0',
-                  fontSize: '15px'
-                }}
-              />
             </div>
 
             <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end'}}>
@@ -204,6 +275,7 @@ export default function Funcionarios() {
         </div>
       )}
 
+      {/* Tabela de Funcionários */}
       <div style={{
         background: '#1e293b',
         borderRadius: '12px',
@@ -213,10 +285,10 @@ export default function Funcionarios() {
         <table style={{width: '100%', borderCollapse: 'collapse'}}>
           <thead style={{background: '#0f172a'}}>
             <tr>
-              <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Nome</th>
+              <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Nome / Doc.</th>
               <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Cargo</th>
               <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Contacto</th>
-              <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Admissão</th>
+              <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Morada</th>
               <th style={{padding: '16px', textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8'}}>Ações</th>
             </tr>
           </thead>
@@ -224,7 +296,7 @@ export default function Funcionarios() {
             {funcionarios.length === 0 ? (
               <tr>
                 <td colSpan={5} style={{padding: '48px', textAlign: 'center', color: '#64748b'}}>
-                  Nenhum funcionário registado. Clica em "+ Novo Funcionário" para começar.
+                  Nenhum funcionário registado.
                 </td>
               </tr>
             ) : (
@@ -232,7 +304,9 @@ export default function Funcionarios() {
                 <tr key={func.id} style={{borderTop: '1px solid #334155'}}>
                   <td style={{padding: '16px', color: '#e2e8f0'}}>
                     <div style={{fontWeight: '500'}}>{func.nome}</div>
-                    {func.email && <div style={{fontSize: '12px', color: '#94a3b8'}}>{func.email}</div>}
+                    <div style={{fontSize: '12px', color: '#94a3b8'}}>
+                      {func.numeroDocumento ? `Doc: ${func.numeroDocumento}` : 'Doc não inform.'} | {func.dataNascimento ? new Date(func.dataNascimento).toLocaleDateString('pt-PT') : ''}
+                    </div>
                   </td>
                   <td style={{padding: '16px', color: '#e2e8f0'}}>
                     <span style={{
@@ -245,8 +319,13 @@ export default function Funcionarios() {
                       {func.cargo}
                     </span>
                   </td>
-                  <td style={{padding: '16px', color: '#e2e8f0'}}>{func.telefone || '-'}</td>
-                  <td style={{padding: '16px', color: '#e2e8f0'}}>{new Date(func.dataAdmissao).toLocaleDateString('pt-PT')}</td>
+                  <td style={{padding: '16px', color: '#e2e8f0'}}>
+                    <div>{func.telefone || '-'}</div>
+                    <div style={{fontSize: '12px', color: '#64748b'}}>{func.email}</div>
+                  </td>
+                  <td style={{padding: '16px', color: '#94a3b8', fontSize: '13px', maxWidth: '200px'}}>
+                    {func.morada || '-'}
+                  </td>
                   <td style={{padding: '16px'}}>
                     <button
                       onClick={() => {
