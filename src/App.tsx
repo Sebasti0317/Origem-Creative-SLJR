@@ -1,3 +1,4 @@
+﻿import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { useAuth } from './hooks/useAuth'
@@ -10,15 +11,16 @@ const queryClient = new QueryClient()
 
 function AppContent() {
   const { user, loading } = useAuth()
+  
   if (loading) return <div className="min-h-screen bg-dark-800 flex items-center justify-center text-white">A carregar...</div>
   if (!user) return <Login />
+  
+  const [activePage] = React.useState('dashboard')
   
   const pages: Record<string, React.ReactNode> = {
     dashboard: <Dashboard />,
     criancas: <Criancas />,
   }
-  
-  const [activePage] = React.useState('dashboard')
   
   return (
     <Layout>
