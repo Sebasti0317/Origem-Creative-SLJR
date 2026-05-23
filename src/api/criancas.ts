@@ -1,81 +1,131 @@
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { Plus, Edit, Trash2, Search, Users } from 'lucide-react'
+import { useState } from 'react'
+import { Avatar } from '../components/ui/Avatar'
+import CriancasForm from './CriancasForm'
 
-type EstadoAcolhimento = 'ativo' | 'transitorio' | 'desligado'
+export default function Criancas() {
+  const [search, setSearch] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editingChild, setEditingChild] = useState<any>(null)
 
-export interface Crianca {
-  id: string
-  nome_completo: string
-  data_nascimento: string
-  genero: string | null
-  contacto_emergencia: string | null
-  estado: EstadoAcolhimento
-  observacoes_psicossociais: string | null
-  data_entrada: string
-  data_saida: string | null
-  deleted_at: string | null
-  created_by: string | null
-  updated_by: string | null
-  created_at: string
-  updated_at: string
-}
+  const { data: criancas, isLoading } = useQuery({
+    queryKey: ['criancas'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('criancas')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
+    }
+  })
 
-export interface CriancaFormData {
-  nome_completo: string
-  data_nascimento: string
-  genero: string
-  contacto_emergencia: string
-  estado: EstadoAcolhimento
-  observacoes_psicossociais: string
-  data_entrada: string
-  data_saida?: string
-}
+  const filtered = criancas?.filter((c: any) => 
+    c.nome_completo?.toLowerCase().includes(search.toLowerCase())
+  ) || []
 
-export async function fetchCriancas() {
-  const { data, error } = await supabase
-    .from('criancas')
-    .select('id, nome_completo, data_nascimento, estado, genero, encarregado_nome, centro_id') // ✅ Apenas o necessário
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data || []
-}
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Crianças</h1>
+          <p className="text-slate-400">Gestão dos registos de crianças acolhidas</p>
+        </div>
+        <button 
+          onClick={() => { setEditingChild(null); setShowForm(true) }}
+          className="btn-primary flex items-center gap-2 w-fit"
+        >
+          <Plus size={18} /> Nova Criança
+        </button>
+      </div>
 
-  // Constrói a query base
-  let query = supabase
-    .from('criancas')
-    .select('*', { count: 'exact' })
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
+      {/* Barra de Pesquisa */}
+      <div className="relative">
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <input 
+          type="text" 
+          placeholder="Pesquisar por nome..." 
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input-field pl-10 w-full sm:w-80"
+        />
+      </div>
 
-  // Aplica filtros
-  if (search) query = query.ilike('nome_completo', '%' + search + '%')
-  if (estado) query = query.eq('estado', estado)
+      {/* Tabela / Lista */}
+      <div className="bg-dark-800 rounded-xl border border-dark-600 overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">A carregar...</div>
+        ) : filtered.length === 0 ? (
+          <div className="p-12 text-center text-slate-500 flex flex-col items-center">
+            <Users size={48} className="mb-4 opacity-20" />
+            <p>Nenhuma criança registada.</p>
+            <button onClick={() => setShowForm(true)} className="text-brand-500 hover:underline mt-2">Registar a primeira criança</button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-dark-700 text-slate-300 text-xs uppercase">
+                <tr>
+                  <th className="px-4 py-3">Nome</th>
+                  <th className="px-4 py-3 hidden sm:table-cell">Data Nasc.</th>
+                  <th className="px-4 py-3 hidden md:table-cell">Encarregado</th>
+                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-dark-600">
+                {filtered.map((c: any) => (
+                  <tr key={c.id} className="hover:bg-dark-700/50 transition">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={c.nome_completo} size={32} />
+                        <div>
+                          <p className="font-medium text-white">{c.nome_completo}</p>
+                          <p className="text-xs text-slate-500">{c.genero}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">
+                      {c.data_nascimento ? new Date(c.data_nascimento).toLocaleDateString() : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-300 hidden md:table-cell">
+                      {c.encarregado_nome || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        c.estado === 'ativo' ? 'bg-green-500/20 text-green-400' :
+                        'bg-slate-500/20 text-slate-400'
+                      }`}>
+                        {c.estado}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => { setEditingChild(c); setShowForm(true) }} className="p-1.5 hover:bg-dark-600 rounded text-blue-400">
+                          <Edit size={16} />
+                        </button>
+                        <button className="p-1.5 hover:bg-dark-600 rounded text-red-400">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-  // Aplica paginação SEMPRE (Supabase lida com ranges vazios)
-  const { data, error, count } = await query.range(from, to)
-  
-  if (error) throw error
-  
-  return { 
-    data: data || [], 
-    count: count || 0,
-    hasNextPage: count ? (from + pageSize) < count : false
-  }
-}
-
-export async function createCrianca(payload: CriancaFormData) {
-  const { data, error } = await supabase.from('criancas').insert(payload).select().single()
-  if (error) throw error
-  return data
-}
-
-export async function updateCrianca(id: string, payload: Partial<CriancaFormData>) {
-  const { data, error } = await supabase.from('criancas').update(payload).eq('id', id).select().single()
-  if (error) throw error
-  return data
-}
-
-export async function softDeleteCrianca(id: string) {
-  const { error } = await supabase.from('criancas').update({ deleted_at: new Date().toISOString() }).eq('id', id)
-  if (error) throw error
+      {/* Modal Formulário */}
+      {showForm && (
+        <CriancasForm 
+          crianca={editingChild} 
+          onCancel={() => setShowForm(false)} 
+        />
+      )}
+    </div>
+  )
 }
