@@ -10,7 +10,6 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-slate-400">Bem-vindo, {user?.email}</p>
       </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-dark-800 p-6 rounded-xl border border-dark-600">
           <h3 className="text-lg font-semibold text-white">Crianças</h3>
