@@ -1,29 +1,32 @@
-﻿import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+﻿import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { useAuth } from './hooks/useAuth'
-import Layout from './components/Layout'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
 
 const queryClient = new QueryClient()
 
 function AppContent() {
-  // ✅ TODOS OS HOOKS NO TOPO, ANTES DE QUALQUER RETURN
   const { user, loading } = useAuth()
-  const [activePage] = React.useState('dashboard')
   
-  // ✅ Agora podes ter returns condicionais
-  if (loading) return <div className="min-h-screen bg-dark-800 flex items-center justify-center text-white">A carregar...</div>
-  if (!user) return <Login />
+  if (loading) {
+    return (
+      <div style={{minHeight: '100vh', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'}}>
+        <h1>A carregar...</h1>
+      </div>
+    )
+  }
   
-  const pages: Record<string, React.ReactNode> = {
-    dashboard: <Dashboard />,
+  if (!user) {
+    return <Login />
   }
   
   return (
-    <Layout>
-      {pages[activePage] || <Dashboard />}
-    </Layout>
+    <div style={{minHeight: '100vh', background: '#1e293b', padding: '20px', color: 'white'}}>
+      <h1>✅ SUCESSO! Dashboard a funcionar!</h1>
+      <p>Bem-vindo: {user.email}</p>
+      <button onClick={() => window.location.reload()}>Recarregar</button>
+    </div>
   )
 }
 
