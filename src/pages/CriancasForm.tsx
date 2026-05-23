@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, getCurrentCentroId } from '../lib/supabase'
+import { supabase } from '../lib/supabase'  // ✅ Removido getCurrentCentroId
 import { toast } from 'react-hot-toast'
 import { X, Save } from 'lucide-react'
 import { Avatar } from '../components/ui/Avatar'
@@ -26,7 +26,7 @@ export default function CriancasForm({ crianca, onCancel }: { crianca?: any, onC
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      const centro_id = await getCurrentCentroId()
+      // ✅ Removido centro_id - base de dados single-tenant
       const payload = {
         nome_completo: data.nome_completo,
         data_nascimento: data.data_nascimento,
@@ -38,8 +38,7 @@ export default function CriancasForm({ crianca, onCancel }: { crianca?: any, onC
         moradia_anterior: data.moradia_anterior,
         contacto_familiar: `${data.contacto_familiar || ''} | ${data.contacto_familiar_tel || ''} | ${data.parentesco_encarregado || ''}`.trim(),
         parentesco_encarregado: data.parentesco_encarregado,
-        centro_id,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString()  // ✅ Sem centro_id
       }
 
       if (crianca?.id) {
