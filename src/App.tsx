@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Criancas from './pages/Criancas'
 import Funcionarios from './pages/Funcionarios'
+import FolhaSalarial from './pages/FolhaSalarial'
 
 const queryClient = new QueryClient()
 
@@ -26,9 +27,10 @@ function AppContent() {
   }
   
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'dashboard', label: 'Dashboard', icon: '' },
     { id: 'criancas', label: 'Crianças', icon: '👶' },
     { id: 'funcionarios', label: 'Funcionários', icon: '👥' },
+    { id: 'folha_salarial', label: 'Folha Salarial', icon: '💰' },
   ]
   
   const renderPage = () => {
@@ -36,6 +38,7 @@ function AppContent() {
       case 'dashboard': return <Dashboard />
       case 'criancas': return <Criancas />
       case 'funcionarios': return <Funcionarios />
+      case 'folha_salarial': return <FolhaSalarial />
       default: return <Dashboard />
     }
   }
