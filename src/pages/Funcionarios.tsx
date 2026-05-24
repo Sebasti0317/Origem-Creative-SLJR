@@ -35,7 +35,7 @@ export default function Funcionarios() {
       ...formData
     }
     
-    setFuncionarios([...funcionarios, novoFuncionario])
+    const updated = [...funcionarios, novoFuncionario]; setFuncionarios(updated); localStorage.setItem('funcionarios_db', JSON.stringify(updated))
     setFormData({
       nome: '',
       cargo: 'Educador',
@@ -329,7 +329,7 @@ export default function Funcionarios() {
                   <td style={{padding: '16px'}}>
                     <button
                       onClick={() => {
-                        setFuncionarios(funcionarios.filter(f => f.id !== func.id))
+                        const updated = funcionarios.filter(f => f.id !== func.id); setFuncionarios(updated); localStorage.setItem('funcionarios_db', JSON.stringify(updated))
                         toast.success('Funcionário removido')
                       }}
                       style={{
@@ -360,3 +360,4 @@ export default function Funcionarios() {
     </div>
   )
 }
+
