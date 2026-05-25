@@ -51,51 +51,24 @@ export default function Configuracoes() {
     }
   }
 
-  const Input = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          background: '#0f172a',
-          border: '1px solid #334155',
-          borderRadius: 6,
-          color: '#e2e8f0',
-          fontSize: 14,
-          boxSizing: 'border-box'
-        }}
-      />
-    </div>
-  )
+  const inputStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: 6,
+    color: '#e2e8f0',
+    fontSize: 14,
+    boxSizing: 'border-box' as const
+  }
 
-  const Select = ({ label, value, onChange, options }: any) => (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>{label}</label>
-      <select
-        value={value}
-        onChange={onChange}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          background: '#0f172a',
-          border: '1px solid #334155',
-          borderRadius: 6,
-          color: '#e2e8f0',
-          fontSize: 14,
-          boxSizing: 'border-box'
-        }}
-      >
-        {options.map((opt: any) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  )
+  const labelStyle = {
+    display: 'block',
+    marginBottom: 6,
+    color: '#94a3b8',
+    fontSize: 13,
+    fontWeight: 500
+  }
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -109,42 +82,61 @@ export default function Configuracoes() {
         <div style={{ background: '#1e293b', padding: 20, borderRadius: 12, border: '1px solid #334155', marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px 0', fontSize: 18, color: '#e2e8f0', borderBottom: '1px solid #334155', paddingBottom: 10 }}>🏢 Dados da Instituição</h3>
           
-          <Input
-            label="Nome da Instituição *"
-            value={config.nomeInstituicao}
-            onChange={(e: any) => setConfig({ ...config, nomeInstituicao: e.target.value })}
-            placeholder="Ex: Centro de Acolhimento de Crianças"
-          />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Input
-              label="Endereço"
-              value={config.endereco}
-              onChange={(e: any) => setConfig({ ...config, endereco: e.target.value })}
-              placeholder="Rua, Cidade, Província"
-            />
-            <Input
-              label="Telefone"
-              value={config.telefone}
-              onChange={(e: any) => setConfig({ ...config, telefone: e.target.value })}
-              placeholder="+244 XXX XXX XXX"
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Nome da Instituição *</label>
+            <input
+              type="text"
+              value={config.nomeInstituicao}
+              onChange={(e) => setConfig({ ...config, nomeInstituicao: e.target.value })}
+              placeholder="Ex: Centro de Acolhimento de Crianças"
+              style={inputStyle}
             />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Input
-              label="Email"
-              type="email"
-              value={config.email}
-              onChange={(e: any) => setConfig({ ...config, email: e.target.value })}
-              placeholder="exemplo@email.com"
-            />
-            <Input
-              label="NIF"
-              value={config.nif}
-              onChange={(e: any) => setConfig({ ...config, nif: e.target.value })}
-              placeholder="Número de Identificação Fiscal"
-            />
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Endereço</label>
+              <input
+                type="text"
+                value={config.endereco}
+                onChange={(e) => setConfig({ ...config, endereco: e.target.value })}
+                placeholder="Rua, Cidade, Província"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Telefone</label>
+              <input
+                type="text"
+                value={config.telefone}
+                onChange={(e) => setConfig({ ...config, telefone: e.target.value })}
+                placeholder="+244 XXX XXX XXX"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Email</label>
+              <input
+                type="email"
+                value={config.email}
+                onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                placeholder="exemplo@email.com"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>NIF</label>
+              <input
+                type="text"
+                value={config.nif}
+                onChange={(e) => setConfig({ ...config, nif: e.target.value })}
+                placeholder="Número de Identificação Fiscal"
+                style={inputStyle}
+              />
+            </div>
           </div>
         </div>
 
@@ -153,47 +145,58 @@ export default function Configuracoes() {
           <h3 style={{ margin: '0 0 16px 0', fontSize: 18, color: '#e2e8f0', borderBottom: '1px solid #334155', paddingBottom: 10 }}>💰 Configurações Fiscais</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Input
-              label="Percentagem INSS (%)"
-              type="number"
-              value={config.inssPercentagem}
-              onChange={(e: any) => setConfig({ ...config, inssPercentagem: e.target.value })}
-              placeholder="3"
-            />
-            <Select
-              label="Moeda Principal"
-              value={config.moedaPrincipal}
-              onChange={(e: any) => setConfig({ ...config, moedaPrincipal: e.target.value })}
-              options={[
-                { value: 'AOA', label: 'Kwanza (AOA)' },
-                { value: 'USD', label: 'Dólar Americano (USD)' },
-                { value: 'EUR', label: 'Euro (EUR)' }
-              ]}
-            />
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Percentagem INSS (%)</label>
+              <input
+                type="number"
+                value={config.inssPercentagem}
+                onChange={(e) => setConfig({ ...config, inssPercentagem: e.target.value })}
+                placeholder="3"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Moeda Principal</label>
+              <select
+                value={config.moedaPrincipal}
+                onChange={(e) => setConfig({ ...config, moedaPrincipal: e.target.value })}
+                style={inputStyle}
+              >
+                <option value="AOA">Kwanza (AOA)</option>
+                <option value="USD">Dólar Americano (USD)</option>
+                <option value="EUR">Euro (EUR)</option>
+              </select>
+            </div>
           </div>
 
-          <Input
-            label="Símbolo da Moeda"
-            value={config.simboloMoeda}
-            onChange={(e: any) => setConfig({ ...config, simboloMoeda: e.target.value })}
-            placeholder="Kz"
-          />
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Símbolo da Moeda</label>
+            <input
+              type="text"
+              value={config.simboloMoeda}
+              onChange={(e) => setConfig({ ...config, simboloMoeda: e.target.value })}
+              placeholder="Kz"
+              style={inputStyle}
+            />
+          </div>
         </div>
 
         {/* Preferências */}
         <div style={{ background: '#1e293b', padding: 20, borderRadius: 12, border: '1px solid #334155', marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px 0', fontSize: 18, color: '#e2e8f0', borderBottom: '1px solid #334155', paddingBottom: 10 }}>🌍 Preferências</h3>
           
-          <Select
-            label="Idioma"
-            value={config.idioma}
-            onChange={(e: any) => setConfig({ ...config, idioma: e.target.value })}
-            options={[
-              { value: 'pt-PT', label: 'Português (Portugal)' },
-              { value: 'pt-AO', label: 'Português (Angola)' },
-              { value: 'en-US', label: 'English' }
-            ]}
-          />
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Idioma</label>
+            <select
+              value={config.idioma}
+              onChange={(e) => setConfig({ ...config, idioma: e.target.value })}
+              style={inputStyle}
+            >
+              <option value="pt-PT">Português (Portugal)</option>
+              <option value="pt-AO">Português (Angola)</option>
+              <option value="en-US">English</option>
+            </select>
+          </div>
         </div>
 
         {/* Botões de Ação */}
