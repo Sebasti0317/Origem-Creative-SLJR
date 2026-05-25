@@ -133,59 +133,69 @@ export default function FolhaSalarial() {
   const imprimir = (p: Pagamento) => {
     const s = SIMBOLO[p.moeda] || ''
     const dataEmissao = new Date().toLocaleDateString('pt-PT')
-    const html = `<!DOCTYPE html><html><head><title>Recibo</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:650px;margin:0 auto;color:#111;line-height:1.6}h1{text-align:center;border-bottom:3px solid #111;padding-bottom:12px;margin-bottom:8px;font-size:24px}.subheader{text-align:center;color:#555;margin-bottom:20px;font-size:14px}.info-box{background:#f5f5f5;padding:15px;border-radius:6px;margin-bottom:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dotted #ccc}.row.total{background:#1e293b;color:#fff;padding:12px;margin-top:15px;border-radius:6px;font-size:18px}.section-title{font-weight:bold;margin-top:15px;margin-bottom:8px;color:#334155;border-bottom:2px solid #6366f1;padding-bottom:4px}.foot{margin-top:50px;display:flex;justify-content:space-between;font-size:13px}.assinatura{border-top:1px solid #111;margin-top:40px;padding-top:8px;text-align:center;width:45%}.badge{display:inline-block;padding:4px 10px;background:#dcfce7;color:#166534;border-radius:4px;font-size:12px;font-weight:bold}</style></head><body>
-<h1>RECIBO DE VENCIMENTO</h1>
-<p style="text-align:center;font-weight:bold;font-size:16px">${nomeInstituicao}</p>
-<p style="text-align:center;color:#64748b;font-size:13px">Comprovativo de Pagamento</p>
+    const html = `<!DOCTYPE html><html><head><title>Recibo</title><style>
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { margin: 1.5cm; size: A4; }
+      }
+      body{font-family:Arial,sans-serif;padding:35px;max-width:650px;margin:0 auto;color:#111;line-height:1.5}
+      h1{text-align:center;border-bottom:3px solid #111;padding-bottom:12px;margin:0 0 10px 0;font-size:24px}
+      .header{text-align:center;margin-bottom:20px}
+      .header b{font-size:16px;color:#334155}
+      .info-box{background:#f5f5f5;padding:15px;border-radius:6px;margin-bottom:20px}
+      .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dotted #ccc}
+      .section-title{font-weight:bold;margin:15px 0 10px 0;color:#334155;border-bottom:2px solid #6366f1;padding-bottom:4px;font-size:15px}
+      .total{background:#1e293b;color:#fff;padding:12px;margin:15px 0;border-radius:6px;font-size:17px}
+      .foot{margin-top:40px;display:flex;justify-content:space-between;font-size:12px}
+      .assinatura{border-top:1px solid #111;margin-top:40px;padding-top:8px;text-align:center;width:45%}
+      .badge{display:inline-block;padding:4px 10px;background:#dcfce7;color:#166534;border-radius:4px;font-size:12px;font-weight:bold;margin-top:8px}
+    </style></head><body>
+      <h1>RECIBO DE VENCIMENTO</h1>
+      <div class="header"><b>${nomeInstituicao}</b></div>
+      
+      <div class="info-box">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div><b>Trabalhador:</b><br/>${p.funcionarioNome}</div>
+          <div style="text-align:right"><b>Mês Referência:</b><br/>${p.mesReferencia}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <div><b>Moeda:</b> ${p.moeda}</div>
+          <div><b>Data de Emissão:</b> ${dataEmissao}</div>
+        </div>
+        ${p.isento ? '<div><span class="badge">✓ REGIME ISENTO DE IMPOSTOS</span></div>' : ''}
+      </div>
 
-<div class="info-box">
-  <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-    <div><b>Trabalhador:</b><br/>${p.funcionarioNome}</div>
-    <div style="text-align:right"><b>Mês Referência:</b><br/>${p.mesReferencia}</div>
-  </div>
-  <div style="display:flex;justify-content:space-between">
-    <div><b>Moeda:</b> ${p.moeda}</div>
-    <div><b>Data de Emissão:</b> ${dataEmissao}</div>
-  </div>
-  ${p.isento ? '<div style="margin-top:10px"><span class="badge">REGIME ISENTO DE IMPOSTOS</span></div>' : ''}
-</div>
+      <div class="section-title">PROVENTOS</div>
+      <div class="row"><span>Salário Base:</span><span>${p.salarioBase.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Bonificações:</span><span>+${p.bonificacoes.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Subsídio de Férias:</span><span>+${p.subsFerias.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Subsídio de Natal:</span><span>+${p.subsNatal.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Subsídio de Táxi:</span><span>+${p.subsTaxi.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Subsídio de Alimentação:</span><span>+${p.subsAlimentacao.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Outros Subsídios:</span><span>+${p.subsOutro.toFixed(2)} ${s}</span></div>
 
-<div class="section-title">PROVENTOS</div>
-<div class="row"><span>Salário Base:</span><span>${p.salarioBase.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Bonificações:</span><span>+${p.bonificacoes.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Subsídio de Férias:</span><span>+${p.subsFerias.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Subsídio de Natal:</span><span>+${p.subsNatal.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Subsídio de Táxi:</span><span>+${p.subsTaxi.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Subsídio de Alimentação:</span><span>+${p.subsAlimentacao.toFixed(2)} ${s}</span></div>
-<div class="row"><span>Outros Subsídios:</span><span>+${p.subsOutro.toFixed(2)} ${s}</span></div>
+      <div class="section-title">DESCONTOS</div>
+      ${!p.isento ? `
+      <div class="row"><span>INSS (3%):</span><span style="color:#ef4444">-${p.inss.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>IRT (Progressivo):</span><span style="color:#ef4444">-${p.irt.toFixed(2)} ${s}</span></div>
+      ` : '<div class="row"><span>INSS / IRT:</span><span style="color:#10b981">0,00 (Isento)</span></div>'}
+      <div class="row"><span>Outros Descontos:</span><span style="color:#ef4444">-${p.outrosDescontos.toFixed(2)} ${s}</span></div>
 
-<div class="section-title">DESCONTOS</div>
-${!p.isento ? `
-<div class="row"><span>INSS (3%):</span><span style="color:#ef4444">-${p.inss.toFixed(2)} ${s}</span></div>
-<div class="row"><span>IRT (Progressivo):</span><span style="color:#ef4444">-${p.irt.toFixed(2)} ${s}</span></div>
-` : '<div class="row"><span>INSS / IRT:</span><span style="color:#10b981">0,00 (Isento)</span></div>'}
-<div class="row"><span>Outros Descontos:</span><span style="color:#ef4444">-${p.outrosDescontos.toFixed(2)} ${s}</span></div>
+      <div class="total"><span style="font-weight:bold">TOTAL LÍQUIDO A PAGAR:</span><span style="font-weight:bold;font-size:22px">${p.salarioLiquido.toFixed(2)} ${s}</span></div>
 
-<div class="row total"><span style="font-weight:bold">TOTAL LÍQUIDO A PAGAR:</span><span style="font-weight:bold;font-size:22px">${p.salarioLiquido.toFixed(2)} ${s}</span></div>
-
-<div class="foot">
-  <div class="assinatura">
-    <b>O Empregador</b><br/>
-    _______________________<br/>
-    ${nomeInstituicao}<br/>
-    <span style="color:#64748b;font-size:11px">${dataEmissao}</span>
-  </div>
-  <div class="assinatura">
-    <b>O Trabalhador(a)</b><br/>
-    _______________________<br/>
-    ${p.funcionarioNome}<br/>
-    <span style="color:#64748b;font-size:11px">Recebi conforme</span>
-  </div>
-</div>
-
-<p style="text-align:center;margin-top:40px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px">Este recibo foi gerado eletronicamente e é válido sem rasuras</p>
-</body></html>`
-    const w = window.open('','','width=700,height=900'); w?.document.write(html); w?.document.close(); w?.print()
+      <div class="foot">
+        <div class="assinatura">
+          <b>O Empregador</b><br/>
+          _______________________
+        </div>
+        <div class="assinatura">
+          <b>O Trabalhador(a)</b><br/>
+          _______________________<br/>
+          <span style="color:#64748b;font-size:11px">Recebi conforme</span>
+        </div>
+      </div>
+    </body></html>`
+    const w = window.open('','','width=680,height=850'); w?.document.write(html); w?.document.close(); w?.print()
   }
 
   const sym = SIMBOLO[moeda] || ''
@@ -193,13 +203,7 @@ ${!p.isento ? `
   const Input = ({label, val, onChange, placeholder='0'}: any) => (
     <div>
       <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>{label}</label>
-      <input 
-        type="text"
-        placeholder={placeholder}
-        value={val} 
-        onChange={onChange}
-        style={{width:'100%',padding:'10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:16}}
-      />
+      <input type="text" placeholder={placeholder} value={val} onChange={onChange} style={{width:'100%',padding:'10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:16}} />
     </div>
   )
 
