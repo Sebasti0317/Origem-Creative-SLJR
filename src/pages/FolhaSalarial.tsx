@@ -136,66 +136,59 @@ export default function FolhaSalarial() {
     const html = `<!DOCTYPE html><html><head><title>Recibo</title><style>
       @media print {
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        @page { margin: 1.5cm; size: A4; }
+        @page { margin: 1cm; size: A4; }
       }
-      body{font-family:Arial,sans-serif;padding:35px;max-width:650px;margin:0 auto;color:#111;line-height:1.5}
-      h1{text-align:center;border-bottom:3px solid #111;padding-bottom:12px;margin:0 0 10px 0;font-size:24px}
-      .header{text-align:center;margin-bottom:20px}
-      .header b{font-size:16px;color:#334155}
-      .info-box{background:#f5f5f5;padding:15px;border-radius:6px;margin-bottom:20px}
-      .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dotted #ccc}
-      .section-title{font-weight:bold;margin:15px 0 10px 0;color:#334155;border-bottom:2px solid #6366f1;padding-bottom:4px;font-size:15px}
-      .total{background:#1e293b;color:#fff;padding:12px;margin:15px 0;border-radius:6px;font-size:17px}
-      .foot{margin-top:40px;display:flex;justify-content:space-between;font-size:12px}
-      .assinatura{border-top:1px solid #111;margin-top:40px;padding-top:8px;text-align:center;width:45%}
-      .badge{display:inline-block;padding:4px 10px;background:#dcfce7;color:#166534;border-radius:4px;font-size:12px;font-weight:bold;margin-top:8px}
+      body{font-family:Arial,sans-serif;padding:20px 25px;max-width:600px;margin:0 auto;color:#111;line-height:1.3;font-size:12px}
+      h1{text-align:center;border-bottom:2px solid #111;padding-bottom:6px;margin:0 0 8px 0;font-size:18px}
+      .header{text-align:center;margin-bottom:12px}
+      .header b{font-size:13px;color:#334155}
+      .info-box{background:#f5f5f5;padding:8px 12px;border-radius:4px;margin-bottom:10px;font-size:11px}
+      .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc}
+      .section-title{font-weight:bold;margin:8px 0 5px 0;color:#334155;border-bottom:1px solid #6366f1;padding-bottom:2px;font-size:11px}
+      .total{background:#1e293b;color:#fff;padding:8px 12px;margin:10px 0;border-radius:4px;font-size:13px}
+      .foot{margin-top:25px;display:flex;justify-content:space-between;font-size:11px}
+      .assinatura{border-top:1px solid #111;margin-top:25px;padding-top:5px;text-align:center;width:45%}
+      .badge{display:inline-block;padding:2px 6px;background:#dcfce7;color:#166534;border-radius:3px;font-size:10px;font-weight:bold;margin-top:4px}
     </style></head><body>
       <h1>RECIBO DE VENCIMENTO</h1>
       <div class="header"><b>${nomeInstituicao}</b></div>
       
       <div class="info-box">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-          <div><b>Trabalhador:</b><br/>${p.funcionarioNome}</div>
-          <div style="text-align:right"><b>Mês Referência:</b><br/>${p.mesReferencia}</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <div><b>Trabalhador:</b> ${p.funcionarioNome}</div>
+          <div><b>Ref:</b> ${p.mesReferencia}</div>
         </div>
         <div style="display:flex;justify-content:space-between">
           <div><b>Moeda:</b> ${p.moeda}</div>
-          <div><b>Data de Emissão:</b> ${dataEmissao}</div>
+          <div><b>Data:</b> ${dataEmissao}</div>
         </div>
-        ${p.isento ? '<div><span class="badge">✓ REGIME ISENTO DE IMPOSTOS</span></div>' : ''}
+        ${p.isento ? '<div><span class="badge">✓ REGIME ISENTO</span></div>' : ''}
       </div>
 
       <div class="section-title">PROVENTOS</div>
       <div class="row"><span>Salário Base:</span><span>${p.salarioBase.toFixed(2)} ${s}</span></div>
       <div class="row"><span>Bonificações:</span><span>+${p.bonificacoes.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>Subsídio de Férias:</span><span>+${p.subsFerias.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>Subsídio de Natal:</span><span>+${p.subsNatal.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>Subsídio de Táxi:</span><span>+${p.subsTaxi.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>Subsídio de Alimentação:</span><span>+${p.subsAlimentacao.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>Outros Subsídios:</span><span>+${p.subsOutro.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Sub. Férias:</span><span>+${p.subsFerias.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Sub. Natal:</span><span>+${p.subsNatal.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Sub. Táxi:</span><span>+${p.subsTaxi.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Sub. Alimentação:</span><span>+${p.subsAlimentacao.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>Sub. Outro:</span><span>+${p.subsOutro.toFixed(2)} ${s}</span></div>
 
       <div class="section-title">DESCONTOS</div>
       ${!p.isento ? `
       <div class="row"><span>INSS (3%):</span><span style="color:#ef4444">-${p.inss.toFixed(2)} ${s}</span></div>
-      <div class="row"><span>IRT (Progressivo):</span><span style="color:#ef4444">-${p.irt.toFixed(2)} ${s}</span></div>
+      <div class="row"><span>IRT:</span><span style="color:#ef4444">-${p.irt.toFixed(2)} ${s}</span></div>
       ` : '<div class="row"><span>INSS / IRT:</span><span style="color:#10b981">0,00 (Isento)</span></div>'}
       <div class="row"><span>Outros Descontos:</span><span style="color:#ef4444">-${p.outrosDescontos.toFixed(2)} ${s}</span></div>
 
-      <div class="total"><span style="font-weight:bold">TOTAL LÍQUIDO A PAGAR:</span><span style="font-weight:bold;font-size:22px">${p.salarioLiquido.toFixed(2)} ${s}</span></div>
+      <div class="total"><span style="font-weight:bold">TOTAL LÍQUIDO:</span><span style="font-weight:bold;font-size:16px">${p.salarioLiquido.toFixed(2)} ${s}</span></div>
 
       <div class="foot">
-        <div class="assinatura">
-          <b>O Empregador</b><br/>
-          _______________________
-        </div>
-        <div class="assinatura">
-          <b>O Trabalhador(a)</b><br/>
-          _______________________<br/>
-          <span style="color:#64748b;font-size:11px">Recebi conforme</span>
-        </div>
+        <div class="assinatura"><b>O Empregador</b><br/>_______________________</div>
+        <div class="assinatura"><b>O Trabalhador(a)</b><br/>_______________________<br/><span style="color:#64748b;font-size:9px">Recebi conforme</span></div>
       </div>
     </body></html>`
-    const w = window.open('','','width=680,height=850'); w?.document.write(html); w?.document.close(); w?.print()
+    const w = window.open('','','width=620,height=780'); w?.document.write(html); w?.document.close(); w?.print()
   }
 
   const sym = SIMBOLO[moeda] || ''
