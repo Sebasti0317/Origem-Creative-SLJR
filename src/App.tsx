@@ -8,6 +8,7 @@ import Criancas from './pages/Criancas'
 import Funcionarios from './pages/Funcionarios'
 import FolhaSalarial from './pages/FolhaSalarial'
 import Relatorios from './pages/Relatorios'
+import Configuracoes from './pages/Configuracoes'
 
 const queryClient = new QueryClient()
 
@@ -24,6 +25,7 @@ function AppContent() {
     { id: 'funcionarios', label: 'Funcionários', icon: '👥' },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '' },
     { id: 'relatorios', label: 'Relatórios', icon: '📊' },
+    { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
   ]
   
   const renderPage = () => {
@@ -33,6 +35,7 @@ function AppContent() {
       case 'funcionarios': return <Funcionarios />
       case 'folha_salarial': return <FolhaSalarial />
       case 'relatorios': return <Relatorios />
+      case 'configuracoes': return <Configuracoes />
       default: return <Dashboard />
     }
   }
