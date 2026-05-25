@@ -50,10 +50,8 @@ export default function FolhaSalarial() {
   useEffect(() => {
     const saved = localStorage.getItem('funcionarios_db')
     if (saved) setFuncionariosList(JSON.parse(saved))
-    
     const savedInst = localStorage.getItem('instituicao_nome')
     if (savedInst) setNomeInstituicao(savedInst)
-    
     const savedPay = localStorage.getItem('folha_salarial_db')
     if (savedPay) setPagamentos(JSON.parse(savedPay))
   }, [])
@@ -63,14 +61,12 @@ export default function FolhaSalarial() {
 
   useEffect(() => {
     const cfg = CONFIG_FISCAL[pais]
-    const base = parseFloat(form.salarioBase) || 0
-    const totalSubs = ['bonificacoes','subsFerias','subsNatal','subsTaxi','subsAlimentacao','subsOutro'].reduce((s,k) => s + (parseFloat((form as any)[k]) || 0), 0)
+    const base = parseFloat(form.salarioBase.replace(/[^0-9.-]+/g,'')) || 0
+    const totalSubs = ['bonificacoes','subsFerias','subsNatal','subsTaxi','subsAlimentacao','subsOutro'].reduce((s,k) => s + (parseFloat((form as any)[k].replace(/[^0-9.-]+/g,'')) || 0), 0)
     const bruto = base + totalSubs
-    
     const inss = isento ? 0 : base * cfg.inss
     const irt = isento ? 0 : calcularIRT(bruto, cfg.irt)
-    const desc = parseFloat(form.outrosDescontos) || 0
-    
+    const desc = parseFloat(form.outrosDescontos.replace(/[^0-9.-]+/g,'')) || 0
     setCalc({ inss, irt, liquido: bruto - inss - irt - desc })
   }, [form, pais, isento])
 
@@ -85,15 +81,19 @@ export default function FolhaSalarial() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.funcionarioNome || !form.salarioBase) return toast.error('Seleciona funcionário e preenche salário base.')
+    if (!form.funcionarioNome || !form.salarioBase) return toast.error('Seleciona funcionário e salário base.')
     
+    const base = parseFloat(form.salarioBase.replace(/[^0-9.-]+/g,'')) || 0
     const novo: Pagamento = {
       id: editingId || Date.now().toString(), funcionarioNome: form.funcionarioNome, mesReferencia: form.mesReferencia,
-      pais: CONFIG_FISCAL[pais].nome, moeda, salarioBase: parseFloat(form.salarioBase),
-      bonificacoes: parseFloat(form.bonificacoes), subsFerias: parseFloat(form.subsFerias),
-      subsNatal: parseFloat(form.subsNatal), subsTaxi: parseFloat(form.subsTaxi),
-      subsAlimentacao: parseFloat(form.subsAlimentacao), subsOutro: parseFloat(form.subsOutro),
-      inss: calc.inss, irt: calc.irt, outrosDescontos: parseFloat(form.outrosDescontos),
+      pais: CONFIG_FISCAL[pais].nome, moeda, salarioBase: base,
+      bonificacoes: parseFloat(form.bonificacoes.replace(/[^0-9.-]+/g,'')) || 0,
+      subsFerias: parseFloat(form.subsFerias.replace(/[^0-9.-]+/g,'')) || 0,
+      subsNatal: parseFloat(form.subsNatal.replace(/[^0-9.-]+/g,'')) || 0,
+      subsTaxi: parseFloat(form.subsTaxi.replace(/[^0-9.-]+/g,'')) || 0,
+      subsAlimentacao: parseFloat(form.subsAlimentacao.replace(/[^0-9.-]+/g,'')) || 0,
+      subsOutro: parseFloat(form.subsOutro.replace(/[^0-9.-]+/g,'')) || 0,
+      inss: calc.inss, irt: calc.irt, outrosDescontos: parseFloat(form.outrosDescontos.replace(/[^0-9.-]+/g,'')) || 0,
       salarioLiquido: calc.liquido, isento, dataPagamento: new Date().toLocaleDateString('pt-PT')
     }
     
@@ -133,7 +133,7 @@ export default function FolhaSalarial() {
     const s = SIMBOLO[p.moeda] || ''
     const html = `<!DOCTYPE html><html><head><title>Recibo</title><style>body{font-family:Arial;padding:30px;max-width:600px;margin:0 auto;color:#111}h1{text-align:center;border-bottom:2px solid #000;padding-bottom:10px}.row{display:flex;justify-content:space-between;margin:6px 0;border-bottom:1px dotted #ccc}.total{font-size:1.6em;font-weight:bold;text-align:right;margin-top:20px}.foot{margin-top:40px;display:flex;justify-content:space-between;font-size:0.9em}</style></head><body>
 <h1>RECIBO DE VENCIMENTO</h1><p style="text-align:center;font-weight:bold">${nomeInstituicao}</p>
-<p><b>Trabalhador:</b> ${p.funcionarioNome} | <b>Ref:</b> ${p.mesReferencia} | <b>Moeda:</b> ${p.moeda}</p>
+<p><b>Trabalhador:</b> ${p.funcionarioNome} | <b>Ref:</b> ${p.mesReferencia}</p>
 <div class="row"><span>Salário Base:</span><span>${p.salarioBase.toFixed(2)} ${s}</span></div>
 <div class="row"><span>Bonificações:</span><span>+${p.bonificacoes.toFixed(2)}</span></div>
 <div class="row"><span>Sub. Férias:</span><span>+${p.subsFerias.toFixed(2)}</span></div>
@@ -141,19 +141,32 @@ export default function FolhaSalarial() {
 <div class="row"><span>Sub. Táxi:</span><span>+${p.subsTaxi.toFixed(2)}</span></div>
 <div class="row"><span>Sub. Alimentação:</span><span>+${p.subsAlimentacao.toFixed(2)}</span></div>
 <div class="row"><span>Sub. Outro:</span><span>+${p.subsOutro.toFixed(2)}</span></div>
-${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>-${p.inss.toFixed(2)}</span></div><div class="row" style="color:#d00"><span>IRT:</span><span>-${p.irt.toFixed(2)}</span></div>` : '<div class="row" style="color:green"><span>Regime:</span><span>ISENTO DE IMPOSTOS</span></div>'}
-<div class="row" style="color:#d00"><span>Outros Descontos:</span><span>-${p.outrosDescontos.toFixed(2)}</span></div>
-<div class="total">LÍQUIDO A PAGAR: ${p.salarioLiquido.toFixed(2)} ${s}</div>
-<div class="foot"><div>Empregador: ______________________<br>Data: ${p.dataPagamento}</div><div>Trabalhador(a): ______________________<br>Visto e conforme</div></div>
+${!p.isento ? `<div class="row" style="color:#d00"><span>INSS:</span><span>-${p.inss.toFixed(2)}</span></div><div class="row" style="color:#d00"><span>IRT:</span><span>-${p.irt.toFixed(2)}</span></div>` : '<div class="row" style="color:green"><span>Regime: ISENTO</span></div>'}
+<div class="row" style="color:#d00"><span>Outros Desc.:</span><span>-${p.outrosDescontos.toFixed(2)}</span></div>
+<div class="total">LÍQUIDO: ${p.salarioLiquido.toFixed(2)} ${s}</div>
+<div class="foot"><div>Empregador: ______________________</div><div>Trabalhador: ______________________</div></div>
 </body></html>`
     const w = window.open('','','width=650,height=800'); w?.document.write(html); w?.document.close(); w?.print()
   }
 
   const sym = SIMBOLO[moeda] || ''
-  const Input = ({label, val, keyName, type='number', color='#e2e8f0'}: any) => (
+  
+  const NumInput = ({label, val, keyName, placeholder='0'}: any) => (
     <div>
-      <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>{label}</label>
-      <input type={type} value={val} onChange={e=>setForm({...form,[keyName]:e.target.value})} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color,fontSize:14}} />
+      <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>{label}</label>
+      <input 
+        type="text" 
+        inputMode="numeric"
+        placeholder={placeholder}
+        value={val} 
+        onChange={e => {
+          const v = e.target.value
+          if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
+            setForm({...form, [keyName]: v})
+          }
+        }}
+        style={{width:'100%',padding:'10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:15}} 
+      />
     </div>
   )
 
@@ -172,12 +185,12 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
           <form onSubmit={handleSubmit}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16,padding:12,background:'#0f172a',borderRadius:8}}>
               <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Nome da Instituição</label>
-                <input type="text" value={nomeInstituicao} onChange={e=>setNomeInstituicao(e.target.value)} style={{width:'100%',padding:'8px 10px',background:'#1e293b',border:'1px solid #334155',borderRadius:6,color:'#6366f1',fontSize:14}} />
+                <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Nome da Instituição</label>
+                <input type="text" value={nomeInstituicao} onChange={e=>setNomeInstituicao(e.target.value)} style={{width:'100%',padding:'8px',background:'#1e293b',border:'1px solid #334155',borderRadius:6,color:'#6366f1',fontSize:14}} />
               </div>
               <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Funcionário</label>
-                <select value={form.funcionarioNome} onChange={e=>setForm({...form,funcionarioNome:e.target.value})} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
+                <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Funcionário</label>
+                <select value={form.funcionarioNome} onChange={e=>setForm({...form,funcionarioNome:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
                   <option value="">Selecionar...</option>
                   {funcionariosList.map((f,i)=><option key={i} value={f.nome}>{f.nome}</option>)}
                 </select>
@@ -185,47 +198,48 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:16}}>
-              <Input label="Mês Referência" val={form.mesReferencia} keyName="mesReferencia" type="month" />
               <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>País Fiscal</label>
-                <select value={pais} onChange={e=>setPais(e.target.value as any)} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
-                  <option value="angola">🇦🇴 Angola</option><option value="brasil">🇷 Brasil</option><option value="outro"> Outro</option>
+                <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Mês Referência</label>
+                <input type="month" value={form.mesReferencia} onChange={e=>setForm({...form,mesReferencia:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}} />
+              </div>
+              <div>
+                <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>País</label>
+                <select value={pais} onChange={e=>setPais(e.target.value as any)} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
+                  <option value="angola">🇦🇴 Angola</option><option value="brasil">🇧 Brasil</option><option value="outro"> Outro</option>
                 </select>
               </div>
               <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Moeda</label>
-                <select value={moeda} onChange={e=>setMoeda(e.target.value)} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
+                <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Moeda</label>
+                <select value={moeda} onChange={e=>setMoeda(e.target.value)} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
                   {CONFIG_FISCAL[pais].moedas.map(m=><option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12,marginBottom:16}}>
-              <Input label="Salário Base *" val={form.salarioBase} keyName="salarioBase" />
-              <Input label="Bonificações" val={form.bonificacoes} keyName="bonificacoes" />
-              <Input label="Sub. Férias" val={form.subsFerias} keyName="subsFerias" />
-              <Input label="Sub. Natal" val={form.subsNatal} keyName="subsNatal" />
+              <NumInput label="💰 Salário Base *" val={form.salarioBase} keyName="salarioBase" placeholder="Ex: 50000" />
+              <NumInput label="Bonificações" val={form.bonificacoes} keyName="bonificacoes" />
+              <NumInput label="Sub. Férias" val={form.subsFerias} keyName="subsFerias" />
+              <NumInput label="Sub. Natal" val={form.subsNatal} keyName="subsNatal" />
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12,marginBottom:16}}>
-              <Input label="Sub. Táxi" val={form.subsTaxi} keyName="subsTaxi" />
-              <Input label="Sub. Alimentação" val={form.subsAlimentacao} keyName="subsAlimentacao" />
-              <Input label="Sub. Outro" val={form.subsOutro} keyName="subsOutro" />
-              <Input label="Outros Descontos" val={form.outrosDescontos} keyName="outrosDescontos" color="#ef4444" />
+              <NumInput label="Sub. Táxi" val={form.subsTaxi} keyName="subsTaxi" />
+              <NumInput label="Sub. Alimentação" val={form.subsAlimentacao} keyName="subsAlimentacao" />
+              <NumInput label="Sub. Outro" val={form.subsOutro} keyName="subsOutro" />
+              <NumInput label="Outros Descontos" val={form.outrosDescontos} keyName="outrosDescontos" />
             </div>
 
             <div style={{marginBottom:16,padding:12,background:isento?'#14532d':'#0f172a',border:`1px solid ${isento?'#22c55e':'#334155'}`,borderRadius:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={{color:isento?'#4ade80':'#94a3b8',fontSize:14}}>
-                <b>Regime de Isenção Fiscal?</b> <span style={{fontSize:12}}>(Zera INSS/IRT automaticamente)</span>
-              </div>
+              <div style={{color:isento?'#4ade80':'#94a3b8',fontSize:14}}><b>Regime de Isenção Fiscal?</b> <span style={{fontSize:12}}>(Zera INSS/IRT)</span></div>
               <button type="button" onClick={()=>setIsento(!isento)} style={{width:44,height:24,borderRadius:12,border:'none',background:isento?'#22c55e':'#475569',position:'relative',cursor:'pointer'}}>
                 <div style={{width:18,height:18,background:'#fff',borderRadius:'50%',position:'absolute',top:3,left:isento?23:3,transition:'left 0.2s'}}/>
               </button>
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:16,padding:12,background:'#0f172a',borderRadius:8,textAlign:'center'}}>
-              <div style={{color:'#94a3b8',fontSize:13}}>INSS<br/><b style={{fontSize:18,color:isento?'#4ade80':'#ef4444'}}>{isento?'ISENTO':`-${calc.inss.toFixed(2)} ${sym}`}</b></div>
-              <div style={{color:'#94a3b8',fontSize:13}}>IRT<br/><b style={{fontSize:18,color:isento?'#4ade80':'#ef4444'}}>{isento?'ISENTO':`-${calc.irt.toFixed(2)} ${sym}`}</b></div>
-              <div style={{color:'#94a3b8',fontSize:13}}>LÍQUIDO<br/><b style={{fontSize:22,color:'#10b981'}}>{calc.liquido.toFixed(2)} ${sym}</b></div>
+              <div style={{color:'#94a3b8',fontSize:13}}>INSS<br/><b style={{fontSize:20,color:isento?'#4ade80':'#ef4444'}}>{isento?'ISENTO':`-${calc.inss.toFixed(2)} ${sym}`}</b></div>
+              <div style={{color:'#94a3b8',fontSize:13}}>IRT<br/><b style={{fontSize:20,color:isento?'#4ade80':'#ef4444'}}>{isento?'ISENTO':`-${calc.irt.toFixed(2)} ${sym}`}</b></div>
+              <div style={{color:'#94a3b8',fontSize:13}}>LÍQUIDO<br/><b style={{fontSize:24,color:'#10b981'}}>{calc.liquido.toFixed(2)} {sym}</b></div>
             </div>
 
             <div style={{display:'flex',gap:12,justifyContent:'flex-end'}}>
