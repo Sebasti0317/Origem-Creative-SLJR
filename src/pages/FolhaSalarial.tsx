@@ -33,6 +33,7 @@ export default function FolhaSalarial() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([])
   const [funcionariosList, setFuncionariosList] = useState<{nome: string}[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [pais, setPais] = useState<'angola' | 'brasil' | 'outro'>('angola')
   const [moeda, setMoeda] = useState('AOA')
   const [isento, setIsento] = useState(false)
@@ -49,7 +50,16 @@ export default function FolhaSalarial() {
   useEffect(() => {
     const saved = localStorage.getItem('funcionarios_db')
     if (saved) setFuncionariosList(JSON.parse(saved))
+    
+    const savedInst = localStorage.getItem('instituicao_nome')
+    if (savedInst) setNomeInstituicao(savedInst)
+    
+    const savedPay = localStorage.getItem('folha_salarial_db')
+    if (savedPay) setPagamentos(JSON.parse(savedPay))
   }, [])
+
+  useEffect(() => { localStorage.setItem('instituicao_nome', nomeInstituicao) }, [nomeInstituicao])
+  useEffect(() => { localStorage.setItem('folha_salarial_db', JSON.stringify(pagamentos)) }, [pagamentos])
 
   useEffect(() => {
     const cfg = CONFIG_FISCAL[pais]
@@ -78,7 +88,7 @@ export default function FolhaSalarial() {
     if (!form.funcionarioNome || !form.salarioBase) return toast.error('Seleciona funcionário e preenche salário base.')
     
     const novo: Pagamento = {
-      id: Date.now().toString(), funcionarioNome: form.funcionarioNome, mesReferencia: form.mesReferencia,
+      id: editingId || Date.now().toString(), funcionarioNome: form.funcionarioNome, mesReferencia: form.mesReferencia,
       pais: CONFIG_FISCAL[pais].nome, moeda, salarioBase: parseFloat(form.salarioBase),
       bonificacoes: parseFloat(form.bonificacoes), subsFerias: parseFloat(form.subsFerias),
       subsNatal: parseFloat(form.subsNatal), subsTaxi: parseFloat(form.subsTaxi),
@@ -86,9 +96,37 @@ export default function FolhaSalarial() {
       inss: calc.inss, irt: calc.irt, outrosDescontos: parseFloat(form.outrosDescontos),
       salarioLiquido: calc.liquido, isento, dataPagamento: new Date().toLocaleDateString('pt-PT')
     }
-    setPagamentos([novo, ...pagamentos])
+    
+    if (editingId) {
+      setPagamentos(pagamentos.map(p => p.id === editingId ? novo : p))
+      toast.success('Pagamento atualizado!')
+    } else {
+      setPagamentos([novo, ...pagamentos])
+      toast.success('Pagamento registado!')
+    }
+    resetForm()
+  }
+
+  const resetForm = () => {
+    setForm({ funcionarioNome: '', mesReferencia: new Date().toISOString().slice(0,7), salarioBase: '', bonificacoes: '0', subsFerias: '0', subsNatal: '0', subsTaxi: '0', subsAlimentacao: '0', subsOutro: '0', outrosDescontos: '0' })
+    setEditingId(null)
+    setIsento(false)
     setShowForm(false)
-    toast.success('Pagamento registado!')
+  }
+
+  const startEdit = (p: Pagamento) => {
+    setForm({
+      funcionarioNome: p.funcionarioNome, mesReferencia: p.mesReferencia,
+      salarioBase: p.salarioBase.toString(), bonificacoes: p.bonificacoes.toString(),
+      subsFerias: p.subsFerias.toString(), subsNatal: p.subsNatal.toString(),
+      subsTaxi: p.subsTaxi.toString(), subsAlimentacao: p.subsAlimentacao.toString(),
+      subsOutro: p.subsOutro.toString(), outrosDescontos: p.outrosDescontos.toString()
+    })
+    setPais(p.pais.toLowerCase() as any)
+    setMoeda(p.moeda)
+    setIsento(p.isento)
+    setEditingId(p.id)
+    setShowForm(true)
   }
 
   const imprimir = (p: Pagamento) => {
@@ -123,17 +161,20 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
         <h2 style={{fontSize:26,fontWeight:'bold',margin:0}}>Folha Salarial</h2>
-        <button onClick={()=>setShowForm(!showForm)} style={{padding:'10px 20px',background:'#6366f1',color:'#fff',border:'none',borderRadius:8,cursor:'pointer'}}>
+        <button onClick={()=>{resetForm();setShowForm(!showForm)}} style={{padding:'10px 18px',background:showForm?'#64748b':'#6366f1',color:'#fff',border:'none',borderRadius:8,cursor:'pointer'}}>
           {showForm ? 'Cancelar' : '+ Novo Pagamento'}
         </button>
       </div>
 
       {showForm && (
         <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155',marginBottom:24}}>
-          <h3 style={{marginTop:0,marginBottom:16,fontSize:18}}>Registar Pagamento</h3>
+          <h3 style={{marginTop:0,marginBottom:16,fontSize:18}}>{editingId?'Editar':'Registar'} Pagamento</h3>
           <form onSubmit={handleSubmit}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16,padding:12,background:'#0f172a',borderRadius:8}}>
-              <Input label="Nome da Instituição" val={nomeInstituicao} keyName="nomeInstituicao" type="text" color="#6366f1" />
+              <div>
+                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Nome da Instituição</label>
+                <input type="text" value={nomeInstituicao} onChange={e=>setNomeInstituicao(e.target.value)} style={{width:'100%',padding:'8px 10px',background:'#1e293b',border:'1px solid #334155',borderRadius:6,color:'#6366f1',fontSize:14}} />
+              </div>
               <div>
                 <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Funcionário</label>
                 <select value={form.funcionarioNome} onChange={e=>setForm({...form,funcionarioNome:e.target.value})} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
@@ -148,7 +189,7 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
               <div>
                 <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>País Fiscal</label>
                 <select value={pais} onChange={e=>setPais(e.target.value as any)} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
-                  <option value="angola">🇦🇴 Angola</option><option value="brasil">🇧🇷 Brasil</option><option value="outro"> Outro</option>
+                  <option value="angola">🇦🇴 Angola</option><option value="brasil">🇷 Brasil</option><option value="outro"> Outro</option>
                 </select>
               </div>
               <div>
@@ -188,8 +229,8 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
             </div>
 
             <div style={{display:'flex',gap:12,justifyContent:'flex-end'}}>
-              <button type="button" onClick={()=>setShowForm(false)} style={{padding:'10px 16px',background:'#334155',color:'#e2e8f0',border:'none',borderRadius:6,cursor:'pointer'}}>Cancelar</button>
-              <button type="submit" style={{padding:'10px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>Guardar Pagamento</button>
+              <button type="button" onClick={resetForm} style={{padding:'8px 14px',background:'#334155',color:'#e2e8f0',border:'none',borderRadius:6,cursor:'pointer'}}>Cancelar</button>
+              <button type="submit" style={{padding:'8px 14px',background:'#10b981',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>{editingId?'Guardar Alterações':'Registar'}</button>
             </div>
           </form>
         </div>
@@ -212,7 +253,11 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS (3%):</span><span>
                 <td style={{padding:12,color:'#94a3b8'}}>{(p.salarioBase + p.bonificacoes + p.subsFerias + p.subsNatal + p.subsTaxi + p.subsAlimentacao + p.subsOutro).toFixed(2)} {SIMBOLO[p.moeda]}</td>
                 <td style={{padding:12,color:'#ef4444',fontSize:13}}>{p.isento?'0,00':`-${(p.inss+p.irt+p.outrosDescontos).toFixed(2)}`}</td>
                 <td style={{padding:12,color:'#10b981',fontWeight:'bold'}}>{p.salarioLiquido.toFixed(2)} {SIMBOLO[p.moeda]}</td>
-                <td style={{padding:12}}><button onClick={()=>imprimir(p)} style={{padding:'6px 10px',background:'#6366f1',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontSize:12}}>️ Recibo</button></td>
+                <td style={{padding:12}}>
+                  <button onClick={()=>startEdit(p)} style={{padding:'4px 8px',background:'#6366f1',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',marginRight:4,fontSize:11}}>Editar</button>
+                  <button onClick={()=>imprimir(p)} style={{padding:'4px 8px',background:'#64748b',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',marginRight:4,fontSize:11}}>Recibo</button>
+                  <button onClick={()=>{setPagamentos(pagamentos.filter(x=>x.id!==p.id));toast.success('Removido')}} style={{padding:'4px 8px',background:'#ef4444',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',fontSize:11}}>Remover</button>
+                </td>
               </tr>
             ))}
           </tbody>
