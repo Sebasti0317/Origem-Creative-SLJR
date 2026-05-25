@@ -24,25 +24,24 @@ interface Pagamento {
 
 const CONFIG_FISCAL = {
   angola: { nome: 'Angola', inss: 0.03, irt: [{ limite: 150000, taxa: 0 }, { limite: 300000, taxa: 0.05 }, { limite: 450000, taxa: 0.10 }, { limite: 600000, taxa: 0.15 }, { limite: 1000000, taxa: 0.20 }, { limite: Infinity, taxa: 0.25 }], moedas: ['AOA', 'USD', 'EUR'] },
-  brasil: { nome: 'Brasil', inss: 0.11, irt: [{ limite: 2259, taxa: 0 }, { limite: 2826, taxa: 0.075 }, { limite: 3751, taxa: 0.15 }, { limite: 4664, taxa: 0.225 }, { limite: Infinity, taxa: 0.275 }], moedas: ['BRL'] },
-  outro: { nome: 'Outro', inss: 0, irt: [{ limite: Infinity, taxa: 0 }], moedas: ['AOA', 'USD', 'EUR', 'BRL'] }
+  outro: { nome: 'Outro', inss: 0, irt: [{ limite: Infinity, taxa: 0 }], moedas: ['AOA', 'USD', 'EUR'] }
 }
-const SIMBOLO = { AOA: 'Kz', USD: '$', EUR: '€', BRL: 'R$' }
+const SIMBOLO = { AOA: 'Kz', USD: '$', EUR: '€' }
 
 export default function FolhaSalarial() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([])
   const [funcionariosList, setFuncionariosList] = useState<{nome: string}[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [pais, setPais] = useState<'angola' | 'brasil' | 'outro'>('angola')
+  const [pais, setPais] = useState<'angola' | 'outro'>('angola')
   const [moeda, setMoeda] = useState('AOA')
   const [isento, setIsento] = useState(false)
   const [nomeInstituicao, setNomeInstituicao] = useState('Centro de Acolhimento')
   
   const [form, setForm] = useState({
     funcionarioNome: '', mesReferencia: new Date().toISOString().slice(0,7),
-    salarioBase: '', bonificacoes: '0', subsFerias: '0', subsNatal: '0',
-    subsTaxi: '0', subsAlimentacao: '0', subsOutro: '0', outrosDescontos: '0'
+    salarioBase: '', bonificacoes: '', subsFerias: '', subsNatal: '',
+    subsTaxi: '', subsAlimentacao: '', subsOutro: '', outrosDescontos: ''
   })
 
   const [calc, setCalc] = useState({ inss: 0, irt: 0, liquido: 0 })
@@ -61,12 +60,12 @@ export default function FolhaSalarial() {
 
   useEffect(() => {
     const cfg = CONFIG_FISCAL[pais]
-    const base = parseFloat(form.salarioBase.replace(/[^0-9.-]+/g,'')) || 0
-    const totalSubs = ['bonificacoes','subsFerias','subsNatal','subsTaxi','subsAlimentacao','subsOutro'].reduce((s,k) => s + (parseFloat((form as any)[k].replace(/[^0-9.-]+/g,'')) || 0), 0)
+    const base = parseFloat(form.salarioBase) || 0
+    const totalSubs = ['bonificacoes','subsFerias','subsNatal','subsTaxi','subsAlimentacao','subsOutro'].reduce((s,k) => s + (parseFloat((form as any)[k]) || 0), 0)
     const bruto = base + totalSubs
     const inss = isento ? 0 : base * cfg.inss
     const irt = isento ? 0 : calcularIRT(bruto, cfg.irt)
-    const desc = parseFloat(form.outrosDescontos.replace(/[^0-9.-]+/g,'')) || 0
+    const desc = parseFloat(form.outrosDescontos) || 0
     setCalc({ inss, irt, liquido: bruto - inss - irt - desc })
   }, [form, pais, isento])
 
@@ -83,17 +82,17 @@ export default function FolhaSalarial() {
     e.preventDefault()
     if (!form.funcionarioNome || !form.salarioBase) return toast.error('Seleciona funcionário e salário base.')
     
-    const base = parseFloat(form.salarioBase.replace(/[^0-9.-]+/g,'')) || 0
+    const base = parseFloat(form.salarioBase) || 0
     const novo: Pagamento = {
       id: editingId || Date.now().toString(), funcionarioNome: form.funcionarioNome, mesReferencia: form.mesReferencia,
       pais: CONFIG_FISCAL[pais].nome, moeda, salarioBase: base,
-      bonificacoes: parseFloat(form.bonificacoes.replace(/[^0-9.-]+/g,'')) || 0,
-      subsFerias: parseFloat(form.subsFerias.replace(/[^0-9.-]+/g,'')) || 0,
-      subsNatal: parseFloat(form.subsNatal.replace(/[^0-9.-]+/g,'')) || 0,
-      subsTaxi: parseFloat(form.subsTaxi.replace(/[^0-9.-]+/g,'')) || 0,
-      subsAlimentacao: parseFloat(form.subsAlimentacao.replace(/[^0-9.-]+/g,'')) || 0,
-      subsOutro: parseFloat(form.subsOutro.replace(/[^0-9.-]+/g,'')) || 0,
-      inss: calc.inss, irt: calc.irt, outrosDescontos: parseFloat(form.outrosDescontos.replace(/[^0-9.-]+/g,'')) || 0,
+      bonificacoes: parseFloat(form.bonificacoes) || 0,
+      subsFerias: parseFloat(form.subsFerias) || 0,
+      subsNatal: parseFloat(form.subsNatal) || 0,
+      subsTaxi: parseFloat(form.subsTaxi) || 0,
+      subsAlimentacao: parseFloat(form.subsAlimentacao) || 0,
+      subsOutro: parseFloat(form.subsOutro) || 0,
+      inss: calc.inss, irt: calc.irt, outrosDescontos: parseFloat(form.outrosDescontos) || 0,
       salarioLiquido: calc.liquido, isento, dataPagamento: new Date().toLocaleDateString('pt-PT')
     }
     
@@ -108,7 +107,7 @@ export default function FolhaSalarial() {
   }
 
   const resetForm = () => {
-    setForm({ funcionarioNome: '', mesReferencia: new Date().toISOString().slice(0,7), salarioBase: '', bonificacoes: '0', subsFerias: '0', subsNatal: '0', subsTaxi: '0', subsAlimentacao: '0', subsOutro: '0', outrosDescontos: '0' })
+    setForm({ funcionarioNome: '', mesReferencia: new Date().toISOString().slice(0,7), salarioBase: '', bonificacoes: '', subsFerias: '', subsNatal: '', subsTaxi: '', subsAlimentacao: '', subsOutro: '', outrosDescontos: '' })
     setEditingId(null)
     setIsento(false)
     setShowForm(false)
@@ -151,21 +150,15 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS:</span><span>-${p.
 
   const sym = SIMBOLO[moeda] || ''
   
-  const NumInput = ({label, val, keyName, placeholder='0'}: any) => (
+  const Input = ({label, val, onChange, placeholder='0'}: any) => (
     <div>
       <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>{label}</label>
       <input 
-        type="text" 
-        inputMode="numeric"
+        type="text"
         placeholder={placeholder}
         value={val} 
-        onChange={e => {
-          const v = e.target.value
-          if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
-            setForm({...form, [keyName]: v})
-          }
-        }}
-        style={{width:'100%',padding:'10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:15}} 
+        onChange={onChange}
+        style={{width:'100%',padding:'10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:16,mozAppearance:'textfield'}}
       />
     </div>
   )
@@ -205,7 +198,7 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS:</span><span>-${p.
               <div>
                 <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>País</label>
                 <select value={pais} onChange={e=>setPais(e.target.value as any)} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
-                  <option value="angola">🇦🇴 Angola</option><option value="brasil">🇧 Brasil</option><option value="outro"> Outro</option>
+                  <option value="angola">🇦🇴 Angola</option><option value="outro"> Outro</option>
                 </select>
               </div>
               <div>
@@ -217,16 +210,16 @@ ${!p.isento ? `<div class="row" style="color:#d00"><span>INSS:</span><span>-${p.
             </div>
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12,marginBottom:16}}>
-              <NumInput label="💰 Salário Base *" val={form.salarioBase} keyName="salarioBase" placeholder="Ex: 50000" />
-              <NumInput label="Bonificações" val={form.bonificacoes} keyName="bonificacoes" />
-              <NumInput label="Sub. Férias" val={form.subsFerias} keyName="subsFerias" />
-              <NumInput label="Sub. Natal" val={form.subsNatal} keyName="subsNatal" />
+              <Input label="💰 Salário Base *" val={form.salarioBase} onChange={(e:any)=>setForm({...form,salarioBase:e.target.value})} placeholder="50000" />
+              <Input label="Bonificações" val={form.bonificacoes} onChange={(e:any)=>setForm({...form,bonificacoes:e.target.value})} />
+              <Input label="Sub. Férias" val={form.subsFerias} onChange={(e:any)=>setForm({...form,subsFerias:e.target.value})} />
+              <Input label="Sub. Natal" val={form.subsNatal} onChange={(e:any)=>setForm({...form,subsNatal:e.target.value})} />
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12,marginBottom:16}}>
-              <NumInput label="Sub. Táxi" val={form.subsTaxi} keyName="subsTaxi" />
-              <NumInput label="Sub. Alimentação" val={form.subsAlimentacao} keyName="subsAlimentacao" />
-              <NumInput label="Sub. Outro" val={form.subsOutro} keyName="subsOutro" />
-              <NumInput label="Outros Descontos" val={form.outrosDescontos} keyName="outrosDescontos" />
+              <Input label="Sub. Táxi" val={form.subsTaxi} onChange={(e:any)=>setForm({...form,subsTaxi:e.target.value})} />
+              <Input label="Sub. Alimentação" val={form.subsAlimentacao} onChange={(e:any)=>setForm({...form,subsAlimentacao:e.target.value})} />
+              <Input label="Sub. Outro" val={form.subsOutro} onChange={(e:any)=>setForm({...form,subsOutro:e.target.value})} />
+              <Input label="Outros Descontos" val={form.outrosDescontos} onChange={(e:any)=>setForm({...form,outrosDescontos:e.target.value})} />
             </div>
 
             <div style={{marginBottom:16,padding:12,background:isento?'#14532d':'#0f172a',border:`1px solid ${isento?'#22c55e':'#334155'}`,borderRadius:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
