@@ -9,6 +9,7 @@ import Funcionarios from './pages/Funcionarios'
 import FolhaSalarial from './pages/FolhaSalarial'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
+import Usuarios from './pages/Usuarios'
 
 const queryClient = new QueryClient()
 
@@ -36,8 +37,9 @@ function AppContent() {
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin','educador'] },
     { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '', roles: ['admin'] },
-    { id: 'relatorios', label: 'Relatórios', icon: '📈', roles: ['admin','educador'] },
-    { id: 'configuracoes', label: 'Configurações', icon: '⚙️', roles: ['admin'] },
+    { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin','educador'] },
+    { id: 'configuracoes', label: 'Configurações', icon: '', roles: ['admin'] },
+    { id: 'usuarios', label: 'Utilizadores', icon: '', roles: ['admin'] },
   ]
 
   const visibleMenu = menuItems.filter(item => item.roles.includes(role))
@@ -50,6 +52,7 @@ function AppContent() {
       case 'folha_salarial': return <FolhaSalarial />
       case 'relatorios': return <Relatorios />
       case 'configuracoes': return <Configuracoes />
+      case 'usuarios': return <Usuarios />
       default: return <Dashboard />
     }
   }
@@ -61,8 +64,8 @@ function AppContent() {
           <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
           <label style={{fontSize:11,color:'#94a3b8',display:'block',marginBottom:4}}>Perfil:</label>
           <select value={role} onChange={handleRoleChange} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',cursor:'pointer'}}>
-            <option value="admin">🔑 Administrador</option>
-            <option value="educador">👤 Educador Social</option>
+            <option value="admin">Administrador</option>
+            <option value="educador">Educador Social</option>
           </select>
         </div>
         <nav style={{flex:1,padding:'20px 0'}}>
