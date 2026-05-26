@@ -12,8 +12,12 @@ export default function Relatorios() {
   const [dados, setDados] = useState<any[]>([])
   const [resumo, setResumo] = useState({ total: 0, valor: 0, media: 0 })
   const [carregando, setCarregando] = useState(false)
+  const [aniversariantes, setAniversariantes] = useState<any[]>([])
 
-  useEffect(() => { carregarDados() }, [modulo, dataInicio, dataFim])
+  useEffect(() => { 
+    carregarDados()
+    carregarAniversariantes()
+  }, [modulo, dataInicio, dataFim])
 
   const carregarDados = () => {
     setCarregando(true)
@@ -35,7 +39,6 @@ export default function Relatorios() {
         lista = [...c.map((x:any)=>({...x,tipo:'Crianca'})), ...f.map((x:any)=>({...x,tipo:'Funcionario'})), ...p.map((x:any)=>({...x,tipo:'Pagamento'}))]
       }
 
-      // Filtro por data
       if (inicio || fim) {
         lista = lista.filter(item => {
           const d = new Date(item.data_entrada || item.dataAdmissao || item.dataPagamento || item.createdAt || Date.now())
@@ -43,7 +46,6 @@ export default function Relatorios() {
         })
       }
 
-      // Filtro por busca textual
       if (busca.trim()) {
         const termo = busca.toLowerCase()
         lista = lista.filter(item => 
@@ -54,17 +56,9 @@ export default function Relatorios() {
       }
 
       setDados(lista)
-      
-      // Cálculos de resumo
       let totalVal = 0
-      lista.forEach((i:any) => { 
-        if (modulo === 'folha' || i.tipo === 'Pagamento') totalVal += parseFloat(i.salarioLiquido || 0) 
-      })
-      setResumo({ 
-        total: lista.length, 
-        valor: totalVal, 
-        media: lista.length ? totalVal / lista.length : 0 
-      })
+      lista.forEach((i:any) => { if (modulo === 'folha' || i.tipo === 'Pagamento') totalVal += parseFloat(i.salarioLiquido || 0) })
+      setResumo({ total: lista.length, valor: totalVal, media: lista.length ? totalVal / lista.length : 0 })
     } catch(e) { 
       setDados([])
       setResumo({ total: 0, valor: 0, media: 0 })
@@ -74,13 +68,40 @@ export default function Relatorios() {
     }
   }
 
+  const carregarAniversariantes = () => {
+    try {
+      const criancas = JSON.parse(localStorage.getItem('criancas_db') || '[]')
+      const funcionarios = JSON.parse(localStorage.getItem('funcionarios_db') || '[]')
+      const mesAtual = new Date().getMonth()
+      
+      const aniversariantesCriancas = criancas.filter((c:any) => {
+        if (!c.dataNascimento) return false
+        const dataNasc = new Date(c.dataNascimento)
+        return dataNasc.getMonth() === mesAtual
+      }).map((c:any) => ({...c, tipo: 'Crianca'}))
+      
+      const aniversariantesFunc = funcionarios.filter((f:any) => {
+        if (!f.dataNascimento) return false
+        const dataNasc = new Date(f.dataNascimento)
+        return dataNasc.getMonth() === mesAtual
+      }).map((f:any) => ({...f, tipo: 'Funcionario'}))
+      
+      const todos = [...aniversariantesCriancas, ...aniversariantesFunc].sort((a,b) => {
+        const dateA = new Date(a.dataNascimento).getDate()
+        const dateB = new Date(b.dataNascimento).getDate()
+        return dateA - dateB
+      })
+      
+      setAniversariantes(todos)
+    } catch(e) {
+      setAniversariantes([])
+    }
+  }
+
   const exportarCSV = () => {
     if (!dados.length) return toast.error('Sem dados para exportar')
     const headers = Object.keys(dados[0]).filter((k:any) => k !== 'id' && k !== 'observacoes')
-    const csv = [
-      headers.join(','),
-      ...dados.map((r:any) => headers.map((h:any) => '"' + String(r[h] || '').replace(/"/g, '""') + '"').join(','))
-    ].join('\n')
+    const csv = [headers.join(','), ...dados.map((r:any) => headers.map((h:any) => '"' + String(r[h] || '').replace(/"/g, '""') + '"').join(','))].join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -88,7 +109,81 @@ export default function Relatorios() {
     a.download = 'relatorio_' + modulo + '_' + new Date().toISOString().slice(0,10) + '.csv'
     a.click()
     URL.revokeObjectURL(url)
-    toast.success('CSV exportado com sucesso!')
+    toast.success('CSV exportado!')
+  }
+
+  const exportarPDF = () => {
+    if (!dados.length) return toast.error('Sem dados para exportar')
+    
+    const conteudo = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Relatório - ${modulo}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          h1 { color: #1e293b; border-bottom: 3px solid #6366f1; padding-bottom: 10px; }
+          .info { background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background: #6366f1; color: white; padding: 12px; text-align: left; }
+          td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+          tr:nth-child(even) { background: #f8fafc; }
+          .footer { margin-top: 40px; text-align: center; color: #64748b; font-size: 12px; }
+          .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        <h1>Relatório - ${modulo === 'criancas' ? 'Crianças' : modulo === 'funcionarios' ? 'Funcionários' : modulo === 'folha' ? 'Folha Salarial' : 'Geral'}</h1>
+        <div class="info">
+          <strong>Total de Registos:</strong> ${resumo.total}<br/>
+          <strong>Valor Total:</strong> ${resumo.valor.toLocaleString('pt-AO')} Kz<br/>
+          <strong>Média:</strong> ${resumo.media.toLocaleString('pt-AO')} Kz<br/>
+          <strong>Data de Geração:</strong> ${new Date().toLocaleDateString('pt-PT')}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Data</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dados.map((item:any) => `
+              <tr>
+                <td>${item.nome || item.funcionarioNome || item.id?.slice(0,10) || '-'}</td>
+                <td><span class="badge" style="background:${item.tipo === 'Crianca' ? '#6366f1' : item.tipo === 'Funcionario' ? '#10b981' : '#f59e0b'}20; color:${item.tipo === 'Crianca' ? '#6366f1' : item.tipo === 'Funcionario' ? '#10b981' : '#f59e0b'}">${item.tipo || modulo}</span></td>
+                <td>${new Date(item.data_entrada || item.dataAdmissao || item.dataPagamento || Date.now()).toLocaleDateString('pt-PT')}</td>
+                <td>${item.cargo ? 'Cargo: '+item.cargo+'<br/>' : ''}${item.salarioLiquido ? 'Líquido: '+parseFloat(item.salarioLiquido).toLocaleString()+' Kz' : ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="footer">
+          <p>Origem Creative SLJR - Relatório gerado em ${new Date().toLocaleString('pt-PT')}</p>
+        </div>
+      </body>
+      </html>
+    `
+    
+    const blob = new Blob([conteudo], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'relatorio_' + modulo + '_' + new Date().toISOString().slice(0,10) + '.html'
+    a.click()
+    URL.revokeObjectURL(url)
+    
+    // Abre numa nova janela para impressão PDF
+    const win = window.open('', '_blank')
+    if (win) {
+      win.document.write(conteudo)
+      win.document.close()
+      win.print()
+    }
+    
+    toast.success('PDF pronto para imprimir/guardar!')
   }
 
   const imprimirRelatorio = () => {
@@ -107,9 +202,38 @@ export default function Relatorios() {
     if (!dataStr) return '-'
     return new Date(dataStr).toLocaleDateString('pt-PT')
   }
+  
+  const calcularIdade = (dataNasc: string) => {
+    if (!dataNasc) return '-'
+    const hoje = new Date()
+    const nasc = new Date(dataNasc)
+    let idade = hoje.getFullYear() - nasc.getFullYear()
+    if (hoje.getMonth() < nasc.getMonth() || (hoje.getMonth() === nasc.getMonth() && hoje.getDate() < nasc.getDate())) idade--
+    return idade
+  }
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      {/* Notificação de Aniversariantes */}
+      {aniversariantes.length > 0 && (
+        <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: 20, borderRadius: 12, marginBottom: 24, color: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 28 }}>🎂</span>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 'bold' }}>Aniversariantes do Mês</h3>
+            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: 12, fontSize: 13 }}>{aniversariantes.length}</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {aniversariantes.map((a:any, i:number) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.15)', padding: '8px 14px', borderRadius: 8, fontSize: 13 }}>
+                <strong>{a.nome}</strong> 
+                <span style={{ opacity: 0.9 }}> • {new Date(a.dataNascimento).getDate()} de {new Date(a.dataNascimento).toLocaleDateString('pt-PT', {month: 'long'})}</span>
+                <span style={{ opacity: 0.8, marginLeft: 8 }}>({calcularIdade(a.dataNascimento)} anos)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Cabeçalho */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #334155' }}>
         <div>
@@ -117,7 +241,8 @@ export default function Relatorios() {
           <p style={{ fontSize: 14, color: '#94a3b8', margin: '4px 0 0' }}>Consulte e exporte dados do sistema</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={exportarCSV} style={{ padding: '10px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Exportar CSV</button>
+          <button onClick={exportarCSV} style={{ padding: '10px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>CSV</button>
+          <button onClick={exportarPDF} style={{ padding: '10px 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>PDF</button>
           <button onClick={imprimirRelatorio} style={{ padding: '10px 16px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Imprimir</button>
         </div>
       </div>
@@ -239,10 +364,9 @@ export default function Relatorios() {
         )}
       </div>
 
-      {/* Rodapé com informações */}
+      {/* Rodapé */}
       <div style={{ marginTop: 24, padding: 16, background: '#0f172a', borderRadius: 8, border: '1px solid #334155', fontSize: 12, color: '#64748b' }}>
         <p style={{ margin: 0 }}>Relatório gerado em {new Date().toLocaleDateString('pt-PT')} às {new Date().toLocaleTimeString('pt-PT')}</p>
-        <p style={{ margin: '4px 0 0' }}>Dados armazenados localmente no navegador. Para persistência permanente, configure a ligação ao Supabase.</p>
       </div>
     </div>
   )
