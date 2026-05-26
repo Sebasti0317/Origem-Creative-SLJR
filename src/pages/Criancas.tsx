@@ -24,9 +24,7 @@ export default function Criancas() {
     if (saved) setCriancas(JSON.parse(saved))
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem('criancas_db', JSON.stringify(criancas))
-  }, [criancas])
+  useEffect(() => { localStorage.setItem('criancas_db', JSON.stringify(criancas)) }, [criancas])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,20 +44,8 @@ export default function Criancas() {
     setShowForm(false)
   }
 
-  const startEdit = (c: Crianca) => {
-    setFormData(c)
-    setEditingId(c.id)
-    setShowForm(true)
-  }
-
-  const calcularIdade = (d: string) => {
-    if (!d) return '-'
-    const hoje = new Date(), nasc = new Date(d)
-    let idade = hoje.getFullYear() - nasc.getFullYear()
-    if (hoje.getMonth() < nasc.getMonth() || (hoje.getMonth() === nasc.getMonth() && hoje.getDate() < nasc.getDate())) idade--
-    return idade
-  }
-
+  const startEdit = (c: Crianca) => { setFormData(c); setEditingId(c.id); setShowForm(true) }
+  const calcularIdade = (d: string) => { if (!d) return '-'; const h = new Date(), n = new Date(d); let i = h.getFullYear() - n.getFullYear(); if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) i--; return i }
   const isAtiva = (c: Crianca) => !c.dataSaida
 
   return (
@@ -83,7 +69,7 @@ export default function Criancas() {
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
               <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Data Saída (opcional)</label><input type="date" value={formData.dataSaida} onChange={e=>setFormData({...formData,dataSaida:e.target.value})} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}} /></div>
-              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Estado</label><div style={{padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:isAtiva({...formData,id:''})?'#10b981':'#ef4444',fontSize:13}}>{isAtiva({...formData,id:''})?'✅ Ativa no Centro':' Saída Registada'}</div></div>
+              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Estado</label><div style={{padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:isAtiva({...formData,id:''})?'#10b981':'#ef4444',fontSize:13}}>{isAtiva({...formData,id:''})?'✅ Ativa no Centro':'️ Saída Registada'}</div></div>
             </div>
             <div style={{marginBottom:16}}><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Observações</label><textarea rows={2} value={formData.observacoes} onChange={e=>setFormData({...formData,observacoes:e.target.value})} style={{width:'100%',padding:'8px 10px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}} /></div>
             <div style={{display:'flex',gap:12,justifyContent:'flex-end'}}>

@@ -10,9 +10,7 @@ export default function Dashboard() {
       const ativas = criancas.filter((c: any) => !c.dataSaida).length
       const saidas = criancas.filter((c: any) => c.dataSaida).length
       setStats({ criancas: criancas.length, ativas, saidas, funcionarios: funcionarios.length })
-    } catch (e) {
-      setStats({ criancas: 0, ativas: 0, saidas: 0, funcionarios: 0 })
-    }
+    } catch (e) { setStats({ criancas: 0, ativas: 0, saidas: 0, funcionarios: 0 }) }
   }, [])
 
   return (
@@ -38,7 +36,7 @@ export default function Dashboard() {
       </div>
       <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155'}}>
         <h3 style={{fontSize:18,fontWeight:'bold',margin:'0 0 12px'}}>Bem-vindo ao Sistema</h3>
-        <p style={{color:'#94a3b8',margin:0,lineHeight:1.6}}>Gestão centralizada de crianças, funcionários e finanças. Utiliza o menu lateral para navegar.</p>
+        <p style={{color:'#94a3b8',margin:0,lineHeight:1.6}}>Gestão centralizada. Utiliza o menu lateral para navegar. Os dados são guardados automaticamente.</p>
       </div>
     </div>
   )

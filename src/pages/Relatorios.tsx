@@ -2,14 +2,14 @@
 import toast from 'react-hot-toast'
 
 export default function Relatorios() {
-  const userRole = localStorage.getItem('user_role') || 'educador'
-  const isEducador = userRole === 'educador'
+  const role = localStorage.getItem('user_role') || 'educador'
+  const isEducador = role === 'educador'
   
   const [modulo, setModulo] = useState(isEducador ? 'criancas' : 'geral')
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [dados, setDados] = useState<any[]>([])
-  const [resumo, setResumo] = useState({ total: 0, valor: 0, media: 0 })
+  const [resumo, setResumo] = useState({ total: 0, valor: 0 })
 
   useEffect(() => { carregarDados() }, [modulo, dataInicio, dataFim])
 
@@ -19,10 +19,13 @@ export default function Relatorios() {
       const inicio = dataInicio ? new Date(dataInicio) : null
       const fim = dataFim ? new Date(dataFim) : null
 
-      if (modulo === 'criancas') lista = JSON.parse(localStorage.getItem('criancas_db') || '[]')
-      else if (modulo === 'funcionarios' && !isEducador) lista = JSON.parse(localStorage.getItem('funcionarios_db') || '[]')
-      else if (modulo === 'folha' && !isEducador) lista = JSON.parse(localStorage.getItem('folha_salarial_db') || '[]')
-      else if (!isEducador) {
+      if (modulo === 'criancas' || isEducador) {
+        lista = JSON.parse(localStorage.getItem('criancas_db') || '[]')
+      } else if (modulo === 'funcionarios') {
+        lista = JSON.parse(localStorage.getItem('funcionarios_db') || '[]')
+      } else if (modulo === 'folha') {
+        lista = JSON.parse(localStorage.getItem('folha_salarial_db') || '[]')
+      } else {
         const c = JSON.parse(localStorage.getItem('criancas_db') || '[]')
         const f = JSON.parse(localStorage.getItem('funcionarios_db') || '[]')
         const p = JSON.parse(localStorage.getItem('folha_salarial_db') || '[]')
@@ -39,8 +42,8 @@ export default function Relatorios() {
       setDados(lista)
       let totalVal = 0
       lista.forEach(i => { if (modulo === 'folha' || i.tipo === 'Pagamento') totalVal += parseFloat(i.salarioLiquido || 0) })
-      setResumo({ total: lista.length, valor: totalVal, media: lista.length ? totalVal / lista.length : 0 })
-    } catch (e) { setDados([]); setResumo({ total: 0, valor: 0, media: 0 }) }
+      setResumo({ total: lista.length, valor: totalVal })
+    } catch (e) { setDados([]); setResumo({ total: 0, valor: 0 }) }
   }
 
   const exportarCSV = () => {
@@ -51,8 +54,6 @@ export default function Relatorios() {
     const a = document.createElement('a'); a.href = url; a.download = `relatorio_${modulo}_${new Date().toISOString().slice(0,10)}.csv`; a.click()
     URL.revokeObjectURL(url); toast.success('CSV exportado!')
   }
-
-  const formatar = (v: number) => v.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })
 
   return (
     <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -69,11 +70,11 @@ export default function Relatorios() {
           <div style={{flex:1,minWidth:150}}>
             <label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Módulo</label>
             <select value={modulo} onChange={e=>setModulo(e.target.value)} style={{width:'100%',padding:8,background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}}>
-              <option value="geral"> Geral</option><option value="criancas">👶 Crianças</option><option value="funcionarios">👥 Funcionários</option><option value="folha">💰 Folha</option>
+              <option value="geral">🌍 Geral</option><option value="criancas"> Crianças</option><option value="funcionarios">👥 Funcionários</option><option value="folha">💰 Folha</option>
             </select>
           </div>
         )}
-        {isEducador && <div style={{padding:'8px 12px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#6366f1',fontSize:14}}>👶 Apenas Crianças</div>}
+        {isEducador && <div style={{padding:'8px 12px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#6366f1',fontSize:14}}>👶 Apenas Crianças (Restrito)</div>}
         <div style={{flex:1,minWidth:150}}><label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Início</label><input type="date" value={dataInicio} onChange={e=>setDataInicio(e.target.value)} style={{width:'100%',padding:8,background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}} /></div>
         <div style={{flex:1,minWidth:150}}><label style={{display:'block',marginBottom:4,color:'#94a3b8',fontSize:12}}>Fim</label><input type="date" value={dataFim} onChange={e=>setDataFim(e.target.value)} style={{width:'100%',padding:8,background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0',fontSize:14}} /></div>
         <button onClick={carregarDados} style={{padding:'8px 16px',background:'#334155',color:'#e2e8f0',border:'none',borderRadius:6,cursor:'pointer',fontSize:14}}>🔄 Atualizar</button>
@@ -81,7 +82,7 @@ export default function Relatorios() {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:16,marginBottom:20}}>
         <div style={{background:'#1e293b',padding:16,borderRadius:10,border:'1px solid #334155'}}><div style={{color:'#94a3b8',fontSize:13}}>Registos</div><div style={{fontSize:28,fontWeight:'bold',color:'#6366f1'}}>{resumo.total}</div></div>
-        <div style={{background:'#1e293b',padding:16,borderRadius:10,border:'1px solid #334155'}}><div style={{color:'#94a3b8',fontSize:13}}>Valor Total</div><div style={{fontSize:28,fontWeight:'bold',color:'#10b981'}}>{formatar(resumo.valor)}</div></div>
+        <div style={{background:'#1e293b',padding:16,borderRadius:10,border:'1px solid #334155'}}><div style={{color:'#94a3b8',fontSize:13}}>Valor Total (Folha)</div><div style={{fontSize:28,fontWeight:'bold',color:'#10b981'}}>{resumo.valor.toLocaleString('pt-AO')} Kz</div></div>
       </div>
 
       <div style={{background:'#1e293b',borderRadius:10,border:'1px solid #334155',overflow:'hidden'}}>

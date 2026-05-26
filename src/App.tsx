@@ -22,7 +22,7 @@ function AppContent() {
     if (savedRole) setRole(savedRole)
   }, [])
 
-  const handleRoleChange = (e) => {
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value
     setRole(newRole)
     localStorage.setItem('user_role', newRole)
