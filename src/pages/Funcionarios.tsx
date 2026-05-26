@@ -2,22 +2,10 @@
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 
-interface Funcionario {
-  id: string
-  nome: string
-  cargo: string | null
-  email: string | null
-  telefone: string | null
-  data_admissao: string | null
-  data_nascimento: string | null
-  numero_documento: string | null
-  morada: string | null
-}
-
 export default function Funcionarios() {
-  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
+  const [funcionarios, setFuncionarios] = useState([])
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState(null)
   const [carregando, setCarregando] = useState(false)
   const [formData, setFormData] = useState({
     nome: '', cargo: 'Educador', email: '', telefone: '', data_admissao: new Date().toISOString().split('T')[0], data_nascimento: '', numero_documento: '', morada: ''
@@ -29,18 +17,19 @@ export default function Funcionarios() {
     setCarregando(true)
     const { data, error } = await supabase.from('funcionarios').select('*').order('id', { ascending: false })
     if (error) {
+      console.error('❌ ERRO AO CARREGAR:', error)
       toast.error('Erro: ' + error.message)
-      console.error(error)
     } else {
       setFuncionarios(data || [])
     }
     setCarregando(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setCarregando(true)
 
+    // Payload base (ajustaremos conforme a tua tabela)
     const payload = {
       nome: formData.nome,
       cargo: formData.cargo,
@@ -52,18 +41,19 @@ export default function Funcionarios() {
       morada: formData.morada || null
     }
 
-    let error
+    console.log('📤 Payload enviado:', payload)
+
+    let res
     if (editingId) {
-      const res = await supabase.from('funcionarios').update(payload).eq('id', editingId)
-      error = res.error
+      res = await supabase.from('funcionarios').update(payload).eq('id', editingId)
     } else {
-      const res = await supabase.from('funcionarios').insert([payload])
-      error = res.error
+      res = await supabase.from('funcionarios').insert([payload])
     }
 
-    if (error) {
-      toast.error('Erro: ' + error.message)
-      console.error(error)
+    if (res.error) {
+      console.error('❌ ERRO SUPABASE 400:', res.error)
+      console.error(' Detalhes:', JSON.stringify(res.error, null, 2))
+      toast.error('Erro 400: ' + res.error.message)
     } else {
       toast.success(editingId ? 'Atualizado!' : 'Registado!')
       resetForm()
@@ -78,26 +68,21 @@ export default function Funcionarios() {
     setShowForm(false)
   }
 
-  const startEdit = (f: Funcionario) => {
+  const startEdit = (f) => {
     setFormData({
-      nome: f.nome || '',
-      cargo: f.cargo || 'Educador',
-      email: f.email || '',
-      telefone: f.telefone || '',
-      data_admissao: f.data_admissao || '',
-      data_nascimento: f.data_nascimento || '',
-      numero_documento: f.numero_documento || '',
-      morada: f.morada || ''
+      nome: f.nome || '', cargo: f.cargo || 'Educador', email: f.email || '', telefone: f.telefone || '',
+      data_admissao: f.data_admissao || '', data_nascimento: f.data_nascimento || '',
+      numero_documento: f.numero_documento || '', morada: f.morada || ''
     })
     setEditingId(f.id)
     setShowForm(true)
   }
 
-  const remover = async (id: string) => {
-    if (!confirm('Remover este funcionário?')) return
+  const remover = async (id) => {
+    if (!confirm('Remover?')) return
     setCarregando(true)
     const { error } = await supabase.from('funcionarios').delete().eq('id', id)
-    if (error) toast.error('Erro ao remover')
+    if (error) { toast.error('Erro: ' + error.message); console.error(error) }
     else { toast.success('Removido'); carregarFuncionarios() }
     setCarregando(false)
   }
@@ -121,13 +106,7 @@ export default function Funcionarios() {
               <div>
                 <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Cargo</label>
                 <select value={formData.cargo} onChange={e=>setFormData({...formData,cargo:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}>
-                  <option>Educador</option>
-                  <option>Coordenador</option>
-                  <option>Diretor</option>
-                  <option>Auxiliar</option>
-                  <option>Cozinheiro</option>
-                  <option>Motorista</option>
-                  <option>Segurança</option>
+                  <option>Educador</option><option>Coordenador</option><option>Diretor</option><option>Auxiliar</option><option>Cozinheiro</option><option>Motorista</option><option>Segurança</option>
                 </select>
               </div>
               <div>
@@ -136,29 +115,14 @@ export default function Funcionarios() {
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-              <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Email</label>
-                <input type="email" value={formData.email} onChange={e=>setFormData({...formData,email:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/>
-              </div>
-              <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Telefone</label>
-                <input type="tel" value={formData.telefone} onChange={e=>setFormData({...formData,telefone:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/>
-              </div>
+              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Email</label><input type="email" value={formData.email} onChange={e=>setFormData({...formData,email:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/></div>
+              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Telefone</label><input type="tel" value={formData.telefone} onChange={e=>setFormData({...formData,telefone:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/></div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-              <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Data Nascimento</label>
-                <input type="date" value={formData.data_nascimento} onChange={e=>setFormData({...formData,data_nascimento:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/>
-              </div>
-              <div>
-                <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Nº Documento</label>
-                <input type="text" value={formData.numero_documento} onChange={e=>setFormData({...formData,numero_documento:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/>
-              </div>
+              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Data Nascimento</label><input type="date" value={formData.data_nascimento} onChange={e=>setFormData({...formData,data_nascimento:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/></div>
+              <div><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Nº Documento</label><input type="text" value={formData.numero_documento} onChange={e=>setFormData({...formData,numero_documento:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/></div>
             </div>
-            <div style={{marginBottom:16}}>
-              <label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Morada</label>
-              <textarea rows={2} value={formData.morada} onChange={e=>setFormData({...formData,morada:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/>
-            </div>
+            <div style={{marginBottom:16}}><label style={{display:'block',marginBottom:6,color:'#94a3b8',fontSize:13}}>Morada</label><textarea rows={2} value={formData.morada} onChange={e=>setFormData({...formData,morada:e.target.value})} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #334155',borderRadius:6,color:'#e2e8f0'}}/></div>
             <div style={{display:'flex',gap:12,justifyContent:'flex-end'}}>
               <button type="button" onClick={resetForm} disabled={carregando} style={{padding:'8px 14px',background:'#334155',color:'#e2e8f0',border:'none',borderRadius:6,cursor:'pointer'}}>Cancelar</button>
               <button type="submit" disabled={carregando} style={{padding:'8px 14px',background:'#10b981',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>{carregando?'A guardar...':(editingId?'Guardar':'Registar')}</button>
@@ -170,14 +134,13 @@ export default function Funcionarios() {
       <div style={{background:'#1e293b',borderRadius:12,border:'1px solid #334155',overflow:'hidden'}}>
         {carregando && <div style={{padding:20,textAlign:'center',color:'#94a3b8'}}>A carregar...</div>}
         <table style={{width:'100%',borderCollapse:'collapse'}}>
-          <thead style={{background:'#0f172a'}}><tr><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Nome</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Cargo</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Contacto</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Admissão</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Ações</th></tr></thead>
+          <thead style={{background:'#0f172a'}}><tr><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Nome</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Cargo</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Contacto</th><th style={{padding:12,textAlign:'left',borderBottom:'1px solid #334155',color:'#94a3b8'}}>Ações</th></tr></thead>
           <tbody>
-            {!carregando && funcionarios.length===0 && <tr><td colSpan={5} style={{padding:32,textAlign:'center',color:'#64748b'}}>Sem registos.</td></tr>}
+            {!carregando && funcionarios.length===0 && <tr><td colSpan={4} style={{padding:32,textAlign:'center',color:'#64748b'}}>Sem registos.</td></tr>}
             {!carregando && funcionarios.map(f=>(<tr key={f.id} style={{borderTop:'1px solid #334155'}}>
-              <td style={{padding:12,color:'#e2e8f0'}}><div style={{fontWeight:500}}>{f.nome}</div>{f.numero_documento&&<div style={{fontSize:12,color:'#64748b'}}>Doc: {f.numero_documento}</div>}</td>
-              <td style={{padding:12}}><span style={{padding:'4px 10px',background:'#6366f120',color:'#6366f1',borderRadius:4,fontSize:12}}>{f.cargo||'-'}</span></td>
-              <td style={{padding:12,color:'#94a3b8',fontSize:13}}>{f.telefone||'-'}{f.email&&<div>{f.email}</div>}</td>
-              <td style={{padding:12,color:'#94a3b8'}}>{f.data_admissao?new Date(f.data_admissao).toLocaleDateString('pt-PT'):'-'}</td>
+              <td style={{padding:12,color:'#e2e8f0'}}>{f.nome}</td>
+              <td style={{padding:12,color:'#94a3b8'}}>{f.cargo||'-'}</td>
+              <td style={{padding:12,color:'#94a3b8',fontSize:13}}>{f.telefone||'-'} {f.email&&<div>{f.email}</div>}</td>
               <td style={{padding:12}}>
                 <button onClick={()=>startEdit(f)} style={{padding:'4px 10px',background:'#6366f1',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',marginRight:6,fontSize:12}}>Editar</button>
                 <button onClick={()=>remover(f.id)} style={{padding:'4px 10px',background:'#ef4444',color:'#fff',border:'none',borderRadius:4,cursor:'pointer',fontSize:12}}>Remover</button>
