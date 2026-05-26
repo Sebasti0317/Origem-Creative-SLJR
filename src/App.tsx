@@ -16,40 +16,42 @@ function AppContent() {
   const { user, loading, signOut } = useAuth()
   const [activePage, setActivePage] = useState('dashboard')
   
-  // Estado do Perfil (Admin ou Educador)
-  const [userRole, setUserRole] = useState<'admin' | 'educador'>('educador')
-  
-  // Carregar perfil guardado ao iniciar
+  // Estado da função (inicializa como educador)
+  const [role, setRole] = useState('educador')
+
+  // Ao carregar, verifica se há uma função guardada
   useEffect(() => {
     const savedRole = localStorage.getItem('user_role')
-    if (savedRole === 'admin' || savedRole === 'educador') {
-      setUserRole(savedRole)
+    if (savedRole) {
+      setRole(savedRole)
     }
   }, [])
 
-  // Guardar perfil sempre que mudar
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRole = e.target.value as 'admin' | 'educador'
-    setUserRole(newRole)
-    localStorage.setItem('user_role', newRole)
+  // Função para mudar de perfil
+  const mudarPerfil = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const novoPerfil = e.target.value
+    setRole(novoPerfil)
+    localStorage.setItem('user_role', novoPerfil)
+    // Volta para o dashboard ao mudar de perfil
+    setActivePage('dashboard') 
   }
 
   if (loading) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A carregar...</h1></div>
   if (!user) return <Login />
-  
-  // Definição de permissões por módulo
-  const allMenuItems = [
+
+  // LISTA COMPLETA DE MENU
+  const menuCompleto = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin', 'educador'] },
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin', 'educador'] },
-    { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
+    { id: 'funcionarios', label: 'Funcionários', icon: '', roles: ['admin'] },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '', roles: ['admin'] },
-    { id: 'relatorios', label: 'Relatórios', icon: '📈', roles: ['admin', 'educador'] },
+    { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin', 'educador'] },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️', roles: ['admin'] },
   ]
-  
-  // Filtrar menu conforme o perfil selecionado
-  const menuItems = allMenuItems.filter(m => m.roles.includes(userRole))
-  
+
+  // FILTRAR MENU CONFORME O PERFIL
+  const menuVisivel = menuCompleto.filter(item => item.roles.includes(role))
+
   const renderPage = () => {
     switch(activePage) {
       case 'dashboard': return <Dashboard />
@@ -61,54 +63,75 @@ function AppContent() {
       default: return <Dashboard />
     }
   }
-  
+
   return (
     <div style={{minHeight:'100vh',background:'#0f172a',color:'#e2e8f0',display:'flex'}}>
-      <aside style={{width:240,background:'#1e293b',borderRight:'1px solid #334155',padding:'20px 0',display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
-        <div>
-          <div style={{padding:'0 20px 16px',borderBottom:'1px solid #334155',marginBottom:16}}>
-            <h1 style={{fontSize:16,fontWeight:'bold',margin:'0 0 8px',color:'#6366f1'}}>Origem Creative SLJR</h1>
-            
-            {/* SELETOR DE PERFIL VISÍVEL */}
-            <select 
-              value={userRole} 
-              onChange={handleRoleChange}
+      
+      {/* BARRA LATERAL */}
+      <aside style={{width:250,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
+        
+        {/* TOPO: TÍTULO E SELETOR */}
+        <div style={{padding:20, borderBottom:'1px solid #334155'}}>
+          <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
+          
+          <label style={{fontSize:11,color:'#94a3b8',display:'block',marginBottom:4}}>Perfil Atual:</label>
+          <select 
+            value={role} 
+            onChange={mudarPerfil}
+            style={{
+              width:'100%',
+              padding:'8px',
+              background:'#0f172a',
+              border:'1px solid #475569',
+              borderRadius:6,
+              color:'#fff',
+              fontWeight:'bold',
+              cursor:'pointer'
+            }}
+          >
+            <option value="educador">👤 Educador Social</option>
+            <option value="admin">🔑 Administrador</option>
+          </select>
+          <p style={{fontSize:10,color:'#64748b',marginTop:6}}>Mudar perfil altera o menu.</p>
+        </div>
+
+        {/* MENU DE NAVEGAÇÃO */}
+        <nav style={{flex:1,padding:'20px 0'}}>
+          {menuVisivel.map(item => (
+            <button 
+              key={item.id} 
+              onClick={()=>setActivePage(item.id)}
               style={{
                 width:'100%',
-                padding:'6px 8px',
-                background:'#0f172a',
-                border:'1px solid #475569',
-                borderRadius:6,
-                color:'#e2e8f0',
-                fontSize:12,
-                cursor:'pointer'
+                padding:'12px 20px',
+                background:activePage===item.id?'#6366f1':'transparent',
+                color:activePage===item.id?'#fff':'#94a3b8',
+                border:'none',
+                textAlign:'left',
+                cursor:'pointer',
+                fontSize:14,
+                display:'flex',
+                alignItems:'center',
+                gap:12
               }}
             >
-              <option value="educador">👤 Educador Social</option>
-              <option value="admin"> Administrador</option>
-            </select>
-          </div>
-          
-          <nav>
-            {menuItems.map(item => (
-              <button key={item.id} onClick={()=>setActivePage(item.id)} style={{
-                width:'100%',padding:'10px 20px',background:activePage===item.id?'#6366f1':'transparent',
-                color:activePage===item.id?'#fff':'#94a3b8',border:'none',textAlign:'left',cursor:'pointer',
-                fontSize:14,display:'flex',alignItems:'center',gap:10,transition:'all 0.2s'
-              }}
-              onMouseEnter={e=>{if(activePage!==item.id){e.currentTarget.style.background='#334155';e.currentTarget.style.color='#e2e8f0'}}}
-              onMouseLeave={e=>{if(activePage!==item.id){e.currentTarget.style.background='transparent';e.currentTarget.style.color='#94a3b8'}}}
-              >
-                <span>{item.icon}</span><span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* BOTÃO SAIR */}
+        <div style={{padding:20,borderTop:'1px solid #334155'}}>
+          <button onClick={()=>signOut()} style={{width:'100%',padding:10,background:'#ef4444',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>Sair da Conta</button>
         </div>
-        <div style={{padding:'0 20px'}}>
-          <button onClick={()=>signOut()} style={{width:'100%',padding:10,background:'#ef4444',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontSize:13}}>Sair</button>
-        </div>
+
       </aside>
-      <main style={{flex:1,padding:24,overflowY:'auto'}}>{renderPage()}</main>
+
+      {/* ÁREA PRINCIPAL */}
+      <main style={{flex:1,padding:30,overflowY:'auto'}}>
+        {renderPage()}
+      </main>
     </div>
   )
 }
