@@ -1,94 +1,93 @@
 ﻿import React, { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-
-interface Usuario {
-  id: string
-  nome: string
-  email: string
-  role: 'admin' | 'educador'
-  ativo: boolean
-  dataCriacao: string
-}
+import { supabase } from '../lib/supabase'
 
 export default function Usuarios() {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [usuarios, setUsuarios] = useState([])
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState(null)
+  const [carregando, setCarregando] = useState(false)
   const [formData, setFormData] = useState({
-    nome: '', email: '', role: 'educador' as 'admin' | 'educador', ativo: true
+    nome: '', email: '', role: 'educador', ativo: true
   })
-  const [senha, setSenha] = useState('')
 
-  useEffect(() => {
-    const saved = localStorage.getItem('usuarios_db')
-    if (saved) {
-      setUsuarios(JSON.parse(saved))
+  useEffect(() => { carregarUsuarios() }, [])
+
+  const carregarUsuarios = async () => {
+    setCarregando(true)
+    const { data, error } = await supabase.from('usuarios').select('*').order('created_at', { ascending: false })
+    if (error) {
+      toast.error('Erro ao carregar utilizadores')
+      console.error(error)
     } else {
-      // Criar utilizador admin padrão se não existir
-      const adminDefault: Usuario = {
-        id: 'admin-001',
-        nome: 'Administrador',
-        email: 'admin@origem.sljr',
-        role: 'admin',
-        ativo: true,
-        dataCriacao: new Date().toISOString()
-      }
-      setUsuarios([adminDefault])
-      localStorage.setItem('usuarios_db', JSON.stringify([adminDefault]))
+      setUsuarios(data || [])
     }
-  }, [])
+    setCarregando(false)
+  }
 
-  useEffect(() => {
-    localStorage.setItem('usuarios_db', JSON.stringify(usuarios))
-  }, [usuarios])
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.nome || !formData.email) return toast.error('Preenche nome e email')
 
-    if (editingId) {
-      setUsuarios(usuarios.map(u => u.id === editingId ? { ...u, ...formData } : u))
-      toast.success('Utilizador atualizado!')
-    } else {
-      // Verificar se email já existe
-      if (usuarios.some(u => u.email === formData.email)) {
-        return toast.error('Email já registado')
-      }
-      const novoUsuario: Usuario = {
-        id: Date.now().toString(),
-        ...formData,
-        dataCriacao: new Date().toISOString()
-      }
-      setUsuarios([...usuarios, novoUsuario])
-      toast.success('Utilizador criado! Envie as credenciais em segurança.')
+    setCarregando(true)
+    const payload = {
+      nome: formData.nome,
+      email: formData.email,
+      role: formData.role,
+      ativo: formData.ativo
     }
-    resetForm()
+
+    let res
+    if (editingId) {
+      res = await supabase.from('usuarios').update(payload).eq('id', editingId)
+    } else {
+      // Verifica se email já existe antes de inserir
+      const { data: existing } = await supabase.from('usuarios').select('id').eq('email', formData.email).single()
+      if (existing) {
+        toast.error('Email já registado!')
+        setCarregando(false)
+        return
+      }
+      res = await supabase.from('usuarios').insert([payload])
+    }
+
+    if (res.error) {
+      toast.error('Erro: ' + res.error.message)
+    } else {
+      toast.success(editingId ? 'Utilizador atualizado!' : 'Utilizador criado!')
+      resetForm()
+      carregarUsuarios()
+    }
+    setCarregando(false)
   }
 
   const resetForm = () => {
     setFormData({ nome: '', email: '', role: 'educador', ativo: true })
-    setSenha('')
     setEditingId(null)
     setShowForm(false)
   }
 
-  const startEdit = (u: Usuario) => {
+  const startEdit = (u) => {
     setFormData({ nome: u.nome, email: u.email, role: u.role, ativo: u.ativo })
     setEditingId(u.id)
     setShowForm(true)
   }
 
-  const toggleAtivo = (id: string) => {
-    setUsuarios(usuarios.map(u => u.id === id ? { ...u, ativo: !u.ativo } : u))
-    toast.success('Estado atualizado')
+  const toggleAtivo = async (id, currentStatus) => {
+    setCarregando(true)
+    const { error } = await supabase.from('usuarios').update({ ativo: !currentStatus }).eq('id', id)
+    if (error) toast.error('Erro ao atualizar estado')
+    else carregarUsuarios()
+    setCarregando(false)
   }
 
-  const removerUsuario = (id: string) => {
-    if (id === 'admin-001') return toast.error('Não podes remover o administrador principal')
-    if (confirm('Remover este utilizador?')) {
-      setUsuarios(usuarios.filter(u => u.id !== id))
-      toast.success('Utilizador removido')
-    }
+  const removerUsuario = async (id) => {
+    if (!confirm('Remover este utilizador?')) return
+    setCarregando(true)
+    const { error } = await supabase.from('usuarios').delete().eq('id', id)
+    if (error) toast.error('Erro ao remover')
+    else { toast.success('Utilizador removido'); carregarUsuarios() }
+    setCarregando(false)
   }
 
   return (
@@ -96,9 +95,9 @@ export default function Usuarios() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h2 style={{ fontSize: 24, fontWeight: 'bold', margin: 0, color: '#e2e8f0' }}>Gestão de Utilizadores</h2>
-          <p style={{ fontSize: 14, color: '#94a3b8', margin: '4px 0 0' }}>Apenas administradores podem gerir utilizadores</p>
+          <p style={{ fontSize: 14, color: '#94a3b8', margin: '4px 0 0' }}>Controlo de acessos ao sistema</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 18px', background: showForm ? '#64748b' : '#6366f1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 500 }}>
+        <button onClick={() => { resetForm(); setShowForm(!showForm) }} style={{ padding: '10px 18px', background: showForm ? '#64748b' : '#6366f1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 500 }}>
           {showForm ? 'Cancelar' : '+ Novo Utilizador'}
         </button>
       </div>
@@ -120,7 +119,7 @@ export default function Usuarios() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: 13 }}>Função</label>
-                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'educador' })} style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 14 }}>
+                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 14 }}>
                   <option value="educador">Educador Social</option>
                   <option value="admin">Administrador</option>
                 </select>
@@ -133,22 +132,16 @@ export default function Usuarios() {
                 </select>
               </div>
             </div>
-            {!editingId && (
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: 13 }}>Senha Inicial (opcional)</label>
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Gerar senha automática se vazio" style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 14 }} />
-              </div>
-            )}
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button type="button" onClick={resetForm} style={{ padding: '10px 20px', background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Cancelar</button>
-              <button type="submit" style={{ padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 500 }}>{editingId ? 'Guardar Alterações' : 'Criar Utilizador'}</button>
+              <button type="submit" disabled={carregando} style={{ padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 500 }}>{carregando ? 'A guardar...' : (editingId ? 'Guardar Alterações' : 'Criar Utilizador')}</button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Lista de Utilizadores */}
       <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
+        {carregando && <div style={{ padding: 20, textAlign: 'center', color: '#94a3b8' }}>A carregar utilizadores...</div>}
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ background: '#0f172a' }}>
             <tr>
@@ -156,12 +149,12 @@ export default function Usuarios() {
               <th style={{ padding: 14, textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8' }}>Email</th>
               <th style={{ padding: 14, textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8' }}>Função</th>
               <th style={{ padding: 14, textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8' }}>Estado</th>
-              <th style={{ padding: 14, textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8' }}>Criado Em</th>
               <th style={{ padding: 14, textAlign: 'right', borderBottom: '1px solid #334155', color: '#94a3b8' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((u) => (
+            {!carregando && usuarios.length === 0 && <tr><td colSpan={5} style={{ padding: 32, textAlign: 'center', color: '#64748b' }}>Nenhum utilizador encontrado.</td></tr>}
+            {!carregando && usuarios.map((u) => (
               <tr key={u.id} style={{ borderTop: '1px solid #334155' }}>
                 <td style={{ padding: 14, color: '#e2e8f0', fontWeight: 500 }}>{u.nome}</td>
                 <td style={{ padding: 14, color: '#94a3b8' }}>{u.email}</td>
@@ -171,23 +164,18 @@ export default function Usuarios() {
                   </span>
                 </td>
                 <td style={{ padding: 14 }}>
-                  <button onClick={() => toggleAtivo(u.id)} style={{ padding: '4px 12px', background: u.ativo ? '#10b98120' : '#ef444420', color: u.ativo ? '#10b981' : '#ef4444', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}>
+                  <button onClick={() => toggleAtivo(u.id, u.ativo)} style={{ padding: '4px 12px', background: u.ativo ? '#10b98120' : '#ef444420', color: u.ativo ? '#10b981' : '#ef4444', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}>
                     {u.ativo ? 'Ativo' : 'Inativo'}
                   </button>
                 </td>
-                <td style={{ padding: 14, color: '#64748b', fontSize: 13 }}>{new Date(u.dataCriacao).toLocaleDateString('pt-PT')}</td>
                 <td style={{ padding: 14, textAlign: 'right' }}>
                   <button onClick={() => startEdit(u)} style={{ padding: '6px 12px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 6 }}>Editar</button>
-                  <button onClick={() => removerUsuario(u.id)} disabled={u.id === 'admin-001'} style={{ padding: '6px 12px', background: u.id === 'admin-001' ? '#475569' : '#ef4444', color: '#fff', border: 'none', borderRadius: 4, cursor: u.id === 'admin-001' ? 'not-allowed' : 'pointer', fontSize: 12, opacity: u.id === 'admin-001' ? 0.6 : 1 }}>Remover</button>
+                  <button onClick={() => removerUsuario(u.id)} style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}>Remover</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div style={{ marginTop: 24, padding: 16, background: '#0f172a', borderRadius: 8, border: '1px solid #334155', fontSize: 12, color: '#64748b' }}>
-        <p style={{ margin: 0 }}>⚠️ Nota: As senhas não são armazenadas neste protótipo. Num ambiente de produção, utilize autenticação segura (Supabase Auth, bcrypt, etc.).</p>
       </div>
     </div>
   )
