@@ -17,7 +17,7 @@ export default function Funcionarios() {
     setCarregando(true)
     const { data, error } = await supabase.from('funcionarios').select('*').order('id', { ascending: false })
     if (error) {
-      console.error('❌ ERRO AO CARREGAR:', error)
+      console.error('❌ Erro ao carregar:', error)
       toast.error('Erro: ' + error.message)
     } else {
       setFuncionarios(data || [])
@@ -29,9 +29,9 @@ export default function Funcionarios() {
     e.preventDefault()
     setCarregando(true)
 
-    // Payload base (ajustaremos conforme a tua tabela)
+    // ✅ CORREÇÃO CRÍTICA: Mapeia 'nome' do formulário para 'nome_completo' da BD
     const payload = {
-      nome: formData.nome,
+      nome_completo: formData.nome, // <-- Bate com a coluna NOT NULL
       cargo: formData.cargo,
       email: formData.email || null,
       telefone: formData.telefone || null,
@@ -51,11 +51,10 @@ export default function Funcionarios() {
     }
 
     if (res.error) {
-      console.error('❌ ERRO SUPABASE 400:', res.error)
-      console.error(' Detalhes:', JSON.stringify(res.error, null, 2))
-      toast.error('Erro 400: ' + res.error.message)
+      console.error('❌ ERRO SUPABASE:', res.error)
+      toast.error('Erro: ' + res.error.message)
     } else {
-      toast.success(editingId ? 'Atualizado!' : 'Registado!')
+      toast.success(editingId ? 'Atualizado!' : 'Registado com sucesso!')
       resetForm()
       carregarFuncionarios()
     }
@@ -70,7 +69,8 @@ export default function Funcionarios() {
 
   const startEdit = (f) => {
     setFormData({
-      nome: f.nome || '', cargo: f.cargo || 'Educador', email: f.email || '', telefone: f.telefone || '',
+      nome: f.nome_completo || f.nome || '', // Tenta ler de ambas as colunas por segurança
+      cargo: f.cargo || 'Educador', email: f.email || '', telefone: f.telefone || '',
       data_admissao: f.data_admissao || '', data_nascimento: f.data_nascimento || '',
       numero_documento: f.numero_documento || '', morada: f.morada || ''
     })
@@ -79,7 +79,7 @@ export default function Funcionarios() {
   }
 
   const remover = async (id) => {
-    if (!confirm('Remover?')) return
+    if (!confirm('Remover este funcionário?')) return
     setCarregando(true)
     const { error } = await supabase.from('funcionarios').delete().eq('id', id)
     if (error) { toast.error('Erro: ' + error.message); console.error(error) }
@@ -138,7 +138,7 @@ export default function Funcionarios() {
           <tbody>
             {!carregando && funcionarios.length===0 && <tr><td colSpan={4} style={{padding:32,textAlign:'center',color:'#64748b'}}>Sem registos.</td></tr>}
             {!carregando && funcionarios.map(f=>(<tr key={f.id} style={{borderTop:'1px solid #334155'}}>
-              <td style={{padding:12,color:'#e2e8f0'}}>{f.nome}</td>
+              <td style={{padding:12,color:'#e2e8f0'}}>{f.nome_completo || f.nome}</td>
               <td style={{padding:12,color:'#94a3b8'}}>{f.cargo||'-'}</td>
               <td style={{padding:12,color:'#94a3b8',fontSize:13}}>{f.telefone||'-'} {f.email&&<div>{f.email}</div>}</td>
               <td style={{padding:12}}>
