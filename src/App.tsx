@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
-import { useAuth } from './hooks/useAuth'
+import { supabase } from './lib/supabase'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Criancas from './pages/Criancas'
@@ -14,23 +14,49 @@ import Usuarios from './pages/Usuarios'
 const queryClient = new QueryClient()
 
 function AppContent() {
-  const { user, loading, signOut } = useAuth()
+  const [session, setSession] = useState(null)
+  const [role, setRole] = useState('educador')
   const [activePage, setActivePage] = useState('dashboard')
-  const [role, setRole] = useState('admin')
+  const [carregandoAuth, setCarregandoAuth] = useState(true)
 
   useEffect(() => {
-    const saved = localStorage.getItem('user_role')
-    if (saved === 'admin' || saved === 'educador') setRole(saved)
+    // 1. Verificar sessão atual
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      if (session) fetchUserRole(session.user.id)
+      else setCarregandoAuth(false)
+    })
+
+    // 2. Ouvir mudanças de estado (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      if (session) fetchUserRole(session.user.id)
+      else { setRole('educador'); setCarregandoAuth(false) }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRole = e.target.value
-    setRole(newRole)
-    localStorage.setItem('user_role', newRole)
+  const fetchUserRole = async (userId) => {
+    try {
+      const { data } = await supabase.from('profiles').select('role').eq('id', userId).single()
+      if (data?.role) setRole(data.role)
+      else setRole('educador')
+    } catch (e) { setRole('educador') }
+    finally { setCarregandoAuth(false) }
   }
 
-  if (loading) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A carregar...</h1></div>
-  if (!user) return <Login />
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setSession(null)
+    setRole('educador')
+    setActivePage('dashboard')
+  }
+
+  if (carregandoAuth) {
+    return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A verificar sessão...</h1></div>
+  }
+  if (!session) return <Login />
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin','educador'] },
@@ -62,11 +88,10 @@ function AppContent() {
       <aside style={{width:250,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
         <div style={{padding:20,borderBottom:'1px solid #334155'}}>
           <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
-          <label style={{fontSize:11,color:'#94a3b8',display:'block',marginBottom:4}}>Perfil:</label>
-          <select value={role} onChange={handleRoleChange} style={{width:'100%',padding:'8px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',cursor:'pointer'}}>
-            <option value="admin">Administrador</option>
-            <option value="educador">Educador Social</option>
-          </select>
+          <div style={{fontSize:12,color:'#94a3b8',marginBottom:4}}>Sessão ativa como:</div>
+          <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:13,textAlign:'center',fontWeight:500}}>
+            {role === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
+          </div>
         </div>
         <nav style={{flex:1,padding:'20px 0'}}>
           {visibleMenu.map(item => (
@@ -75,7 +100,9 @@ function AppContent() {
             </button>
           ))}
         </nav>
-        <div style={{padding:20,borderTop:'1px solid #334155'}}><button onClick={()=>signOut()} style={{width:'100%',padding:10,background:'#ef4444',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}}>Sair</button></div>
+        <div style={{padding:20,borderTop:'1px solid #334155'}}>
+          <button onClick={handleLogout} style={{width:'100%',padding:10,background:'#ef4444',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>🚪 Sair</button>
+        </div>
       </aside>
       <main style={{flex:1,padding:30,overflowY:'auto'}}>{renderPage()}</main>
     </div>
