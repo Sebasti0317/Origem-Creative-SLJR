@@ -15,30 +15,26 @@ const queryClient = new QueryClient()
 
 function AppContent() {
   const [session, setSession] = useState(null)
-  const [role, setRole] = useState('educador')
+  const [role, setRole] = useState('educador') // Começa como educador por padrão
   const [activePage, setActivePage] = useState('dashboard')
   const [carregandoAuth, setCarregandoAuth] = useState(true)
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setSession(session)
-        if (session) await fetchUserRole(session.user)
-      } catch (err) {
-        // ✅ SE O TOKEN ESTIVER CORROMPIDO, LIMPA E FORÇA LOGIN
-        console.warn('Sessão inválida, a limpar...', err)
-        await supabase.auth.signOut()
-      } finally {
-        setCarregandoAuth(false)
-      }
-    }
-    initAuth()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Inicialização Rápida
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (event === 'SIGNED_IN' && session) await fetchUserRole(session.user)
-      if (event === 'SIGNED_OUT') { setRole('educador'); setCarregandoAuth(false) }
+      setCarregandoAuth(false) // Mostra o site IMEDIATAMENTE após verificar sessão
+      if (session) fetchUserRole(session.user) // Role carrega em background
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session)
+      setCarregandoAuth(false)
+      if (event === 'SIGNED_IN' && session) fetchUserRole(session.user)
+      if (event === 'SIGNED_OUT') { 
+        setRole('educador'); 
+        setActivePage('dashboard');
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -46,15 +42,14 @@ function AppContent() {
 
   const fetchUserRole = async (user) => {
     try {
-      //  EMERGÊNCIA: Força admin se o email bater (substitui pelo teu)
-      if (user.email === 'admin@teucentro.com') {
-        setRole('admin')
-        return
+      // Força Admin se for o teu email
+      if (user.email === 'admin@teucentro.com' || user.email === 'admin@origem.sljr') {
+        setRole('admin'); return;
       }
+      
       const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (data?.role) setRole(data.role)
-      else setRole('educador')
-    } catch (e) { setRole('educador') }
+    } catch (e) { /* Ignora erros de rede rápidos */ }
   }
 
   const handleLogout = async () => {
@@ -64,20 +59,22 @@ function AppContent() {
     setActivePage('dashboard')
   }
 
-  if (carregandoAuth) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A verificar sessão...</h1></div>
+  if (carregandoAuth) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A iniciar...</h1></div>
   if (!session) return <Login />
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin','educador'] },
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin','educador'] },
-    { id: 'funcionarios', label: 'Funcionários', icon: '', roles: ['admin'] },
+    { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '', roles: ['admin'] },
     { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin','educador'] },
     { id: 'configuracoes', label: 'Configurações', icon: '', roles: ['admin'] },
     { id: 'usuarios', label: 'Utilizadores', icon: '', roles: ['admin'] },
   ]
 
-  const visibleMenu = menuItems.filter(item => item.roles.includes(role))
+  // Se a role ainda não carregou, mostra apenas o dashboard seguro
+  const currentRole = role || 'educador'
+  const visibleMenu = menuItems.filter(item => item.roles.includes(currentRole))
 
   const renderPage = () => {
     switch(activePage) {
@@ -97,9 +94,9 @@ function AppContent() {
       <aside style={{width:250,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
         <div style={{padding:20,borderBottom:'1px solid #334155'}}>
           <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
-          <div style={{fontSize:12,color:'#94a3b8',marginBottom:4}}>Sessão ativa como:</div>
+          <div style={{fontSize:12,color:'#94a3b8',marginBottom:4}}>Sessão ativa:</div>
           <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:13,textAlign:'center',fontWeight:500}}>
-            {role === 'admin' ? '👑 Administrador' : '👨‍ Educador'}
+            {currentRole === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
           </div>
         </div>
         <nav style={{flex:1,padding:'20px 0'}}>
