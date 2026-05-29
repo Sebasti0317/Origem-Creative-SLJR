@@ -15,26 +15,22 @@ const queryClient = new QueryClient()
 
 function AppContent() {
   const [session, setSession] = useState(null)
-  const [role, setRole] = useState('educador') // Começa como educador por padrão
+  const [role, setRole] = useState('educador')
   const [activePage, setActivePage] = useState('dashboard')
   const [carregandoAuth, setCarregandoAuth] = useState(true)
 
   useEffect(() => {
-    // Inicialização Rápida
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      setCarregandoAuth(false) // Mostra o site IMEDIATAMENTE após verificar sessão
-      if (session) fetchUserRole(session.user) // Role carrega em background
+      setCarregandoAuth(false)
+      if (session) fetchUserRole(session.user)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       setCarregandoAuth(false)
       if (event === 'SIGNED_IN' && session) fetchUserRole(session.user)
-      if (event === 'SIGNED_OUT') { 
-        setRole('educador'); 
-        setActivePage('dashboard');
-      }
+      if (event === 'SIGNED_OUT') { setRole('educador'); setActivePage('dashboard') }
     })
 
     return () => subscription.unsubscribe()
@@ -42,14 +38,12 @@ function AppContent() {
 
   const fetchUserRole = async (user) => {
     try {
-      // Força Admin se for o teu email
       if (user.email === 'admin@teucentro.com' || user.email === 'admin@origem.sljr') {
-        setRole('admin'); return;
+        setRole('admin'); return
       }
-      
       const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (data?.role) setRole(data.role)
-    } catch (e) { /* Ignora erros de rede rápidos */ }
+      setRole(data?.role || 'educador')
+    } catch (e) { setRole('educador') }
   }
 
   const handleLogout = async () => {
@@ -62,27 +56,32 @@ function AppContent() {
   if (carregandoAuth) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A iniciar...</h1></div>
   if (!session) return <Login />
 
+  // ✅ RESTRIÇÃO ESTRITA DE PERMISSÕES
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin','educador'] },
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin','educador'] },
-    { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
-    { id: 'folha_salarial', label: 'Folha Salarial', icon: '', roles: ['admin'] },
     { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin','educador'] },
-    { id: 'configuracoes', label: 'Configurações', icon: '', roles: ['admin'] },
-    { id: 'usuarios', label: 'Utilizadores', icon: '', roles: ['admin'] },
+    // 👇 Apenas Admin
+    { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
+    { id: 'folha_salarial', label: 'Folha Salarial', icon: '💰', roles: ['admin'] },
+    { id: 'configuracoes', label: 'Configurações', icon: '⚙️', roles: ['admin'] },
+    { id: 'usuarios', label: 'Utilizadores', icon: '🔐', roles: ['admin'] },
   ]
 
-  // Se a role ainda não carregou, mostra apenas o dashboard seguro
-  const currentRole = role || 'educador'
-  const visibleMenu = menuItems.filter(item => item.roles.includes(currentRole))
+  const visibleMenu = menuItems.filter(item => item.roles.includes(role))
 
   const renderPage = () => {
+    // Proteção extra: se educador tentar aceder a rota admin via URL
+    if (role === 'educador' && ['funcionarios','folha_salarial','configuracoes','usuarios'].includes(activePage)) {
+      setActivePage('dashboard')
+      return <Dashboard />
+    }
     switch(activePage) {
       case 'dashboard': return <Dashboard />
       case 'criancas': return <Criancas />
       case 'funcionarios': return <Funcionarios />
       case 'folha_salarial': return <FolhaSalarial />
-      case 'relatorios': return <Relatorios />
+      case 'relatorios': return <Relatorios role={role} />
       case 'configuracoes': return <Configuracoes />
       case 'usuarios': return <Usuarios />
       default: return <Dashboard />
@@ -91,26 +90,25 @@ function AppContent() {
 
   return (
     <div style={{minHeight:'100vh',background:'#0f172a',color:'#e2e8f0',display:'flex'}}>
-      <aside style={{width:250,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
+      <aside style={{width:240,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
         <div style={{padding:20,borderBottom:'1px solid #334155'}}>
-          <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
-          <div style={{fontSize:12,color:'#94a3b8',marginBottom:4}}>Sessão ativa:</div>
-          <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:13,textAlign:'center',fontWeight:500}}>
-            {currentRole === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
+          <h1 style={{fontSize:17,fontWeight:'bold',margin:'0 0 12px',color:'#6366f1'}}>Origem Creative</h1>
+          <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:12,textAlign:'center',fontWeight:500}}>
+            {role === 'admin' ? ' Administrador' : '👨‍🏫 Educador'}
           </div>
         </div>
-        <nav style={{flex:1,padding:'20px 0'}}>
+        <nav style={{flex:1,padding:'16px 0'}}>
           {visibleMenu.map(item => (
-            <button key={item.id} onClick={()=>setActivePage(item.id)} style={{width:'100%',padding:'12px 20px',background:activePage===item.id?'#6366f1':'transparent',color:activePage===item.id?'#fff':'#94a3b8',border:'none',textAlign:'left',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',gap:12}}>
+            <button key={item.id} onClick={()=>setActivePage(item.id)} style={{width:'100%',padding:'11px 20px',background:activePage===item.id?'#6366f1':'transparent',color:activePage===item.id?'#fff':'#94a3b8',border:'none',textAlign:'left',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',gap:10}}>
               <span>{item.icon}</span><span>{item.label}</span>
             </button>
           ))}
         </nav>
-        <div style={{padding:20,borderTop:'1px solid #334155'}}>
-          <button onClick={handleLogout} style={{width:'100%',padding:10,background:'#ef4444',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:500}}>🚪 Sair</button>
+        <div style={{padding:16,borderTop:'1px solid #334155'}}>
+          <button onClick={handleLogout} style={{width:'100%',padding:10,background:'#ef444415',color:'#ef4444',border:'1px solid #ef444430',borderRadius:6,cursor:'pointer',fontWeight:500,fontSize:13}}> Terminar Sessão</button>
         </div>
       </aside>
-      <main style={{flex:1,padding:30,overflowY:'auto'}}>{renderPage()}</main>
+      <main style={{flex:1,padding:24,overflowY:'auto',maxHeight:'100vh'}}>{renderPage()}</main>
     </div>
   )
 }
