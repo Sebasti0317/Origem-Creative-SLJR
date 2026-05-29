@@ -1,5 +1,4 @@
 ﻿import React, { useState, useEffect } from 'react'
-import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 
 export default function Usuarios() {
@@ -22,9 +21,9 @@ export default function Usuarios() {
         <p style={{ fontSize: 14, color: '#94a3b8', marginTop: 4 }}>Lista interna de funcionários registados</p>
       </div>
 
-      {/* 🛡️ GUIA ATUALIZADO: Apenas método Dashboard */}
+      {/* 🛡️ GUIA ATUALIZADO */}
       <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 20, marginBottom: 24 }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#e2e8f0' }}> Como criar acesso de login (Método Oficial)</h3>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#e2e8f0' }}>🔐 Como criar acesso de login (Método Oficial)</h3>
         <p style={{ fontSize: 13, color: '#94a3b8', margin: '0 0 16px 0' }}>
           O registo público está bloqueado por segurança. O Administrador cria contas via Supabase Dashboard:
         </p>
@@ -34,7 +33,8 @@ export default function Usuarios() {
             <li>Vai a <b>Authentication → Users</b></li>
             <li>Clica em <b>"Invite User"</b></li>
             <li>Preenche o email do funcionário</li>
-            <li>Em <b>User Metadata (JSON)</b>, cola: <code style={{background:'#1e293b',padding:'3px 6px',borderRadius:4,color:'#fbbf24'}}>{"nome": "Nome Completo", "role": "educador"}</code></li>
+            {/* ✅ CORREÇÃO: Adicionei aspas simples à volta do JSON para evitar erro de compilação */}
+            <li>Em <b>User Metadata (JSON)</b>, cola: <code style={{background:'#1e293b',padding:'2px 6px',borderRadius:4,color:'#fbbf24'}}>{'{"nome": "Nome Completo", "role": "educador"}'}</code></li>
             <li>Clica em <b>Send Invite</b>. O sistema cria automaticamente o perfil e a role.</li>
           </ol>
         </div>
