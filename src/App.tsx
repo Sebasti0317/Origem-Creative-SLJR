@@ -20,30 +20,41 @@ function AppContent() {
   const [carregandoAuth, setCarregandoAuth] = useState(true)
 
   useEffect(() => {
-    // 1. Verificar sessão atual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      if (session) fetchUserRole(session.user.id)
-      else setCarregandoAuth(false)
-    })
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
+        if (session) await fetchUserRole(session.user)
+      } catch (err) {
+        // ✅ SE O TOKEN ESTIVER CORROMPIDO, LIMPA E FORÇA LOGIN
+        console.warn('Sessão inválida, a limpar...', err)
+        await supabase.auth.signOut()
+      } finally {
+        setCarregandoAuth(false)
+      }
+    }
+    initAuth()
 
-    // 2. Ouvir mudanças de estado (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      if (session) fetchUserRole(session.user.id)
-      else { setRole('educador'); setCarregandoAuth(false) }
+      if (event === 'SIGNED_IN' && session) await fetchUserRole(session.user)
+      if (event === 'SIGNED_OUT') { setRole('educador'); setCarregandoAuth(false) }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchUserRole = async (userId) => {
+  const fetchUserRole = async (user) => {
     try {
-      const { data } = await supabase.from('profiles').select('role').eq('id', userId).single()
+      //  EMERGÊNCIA: Força admin se o email bater (substitui pelo teu)
+      if (user.email === 'admin@teucentro.com') {
+        setRole('admin')
+        return
+      }
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (data?.role) setRole(data.role)
       else setRole('educador')
     } catch (e) { setRole('educador') }
-    finally { setCarregandoAuth(false) }
   }
 
   const handleLogout = async () => {
@@ -53,15 +64,13 @@ function AppContent() {
     setActivePage('dashboard')
   }
 
-  if (carregandoAuth) {
-    return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A verificar sessão...</h1></div>
-  }
+  if (carregandoAuth) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A verificar sessão...</h1></div>
   if (!session) return <Login />
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin','educador'] },
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin','educador'] },
-    { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
+    { id: 'funcionarios', label: 'Funcionários', icon: '', roles: ['admin'] },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '', roles: ['admin'] },
     { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin','educador'] },
     { id: 'configuracoes', label: 'Configurações', icon: '', roles: ['admin'] },
@@ -90,7 +99,7 @@ function AppContent() {
           <h1 style={{fontSize:18,fontWeight:'bold',margin:'0 0 15px',color:'#6366f1'}}>Origem Creative SLJR</h1>
           <div style={{fontSize:12,color:'#94a3b8',marginBottom:4}}>Sessão ativa como:</div>
           <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:13,textAlign:'center',fontWeight:500}}>
-            {role === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
+            {role === 'admin' ? '👑 Administrador' : '👨‍ Educador'}
           </div>
         </div>
         <nav style={{flex:1,padding:'20px 0'}}>
