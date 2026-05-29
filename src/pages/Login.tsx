@@ -13,25 +13,29 @@ export default function Login() {
 
     try {
       if (isSignup) {
-        // Registo
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: { data: { nome: formData.nome, role: 'educador' } }
         })
         if (error) throw error
-        toast.success('Conta criada! Faz login.')
+        toast.success('Conta criada! Podes fazer login.')
         setIsSignup(false)
       } else {
         // Login
-        const { error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email.trim(), // Remove espaços acidentais
           password: formData.password
         })
+        
         if (error) throw error
-        toast.success('Login efetuado!')
+        
+        // Se chegou aqui, login foi sucesso
+        toast.success('Login efetuado com sucesso!')
       }
     } catch (err) {
+      console.error('Erro de Auth Detalhado:', err)
+      // Mostra a mensagem exata do Supabase (ex: "Invalid login credentials")
       toast.error(err.message || 'Erro na autenticação')
     } finally {
       setCarregando(false)
