@@ -38,9 +38,19 @@ function AppContent() {
 
   const fetchUserRole = async (user) => {
     try {
-      if (user.email === 'admin@teucentro.com' || user.email === 'admin@origem.sljr') {
-        setRole('admin'); return
+      // ✅ APENAS ESTES EMAILS SÃO ADMINS (remove sebasjrkeba@gmail.com)
+      const adminEmails = [
+        'admin@origem.sljr',
+        'admin@teucentro.com'
+        // Adiciona aqui outros emails de admin se necessário
+      ]
+      
+      if (adminEmails.includes(user.email)) {
+        setRole('admin')
+        return
       }
+      
+      // Para todos os outros, lê da tabela profiles
       const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       setRole(data?.role || 'educador')
     } catch (e) { setRole('educador') }
@@ -56,12 +66,10 @@ function AppContent() {
   if (carregandoAuth) return <div style={{minHeight:'100vh',background:'#0f172a',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}><h1>A iniciar...</h1></div>
   if (!session) return <Login />
 
-  // ✅ RESTRIÇÃO ESTRITA DE PERMISSÕES
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin','educador'] },
     { id: 'criancas', label: 'Crianças', icon: '👶', roles: ['admin','educador'] },
     { id: 'relatorios', label: 'Relatórios', icon: '', roles: ['admin','educador'] },
-    // 👇 Apenas Admin
     { id: 'funcionarios', label: 'Funcionários', icon: '👥', roles: ['admin'] },
     { id: 'folha_salarial', label: 'Folha Salarial', icon: '💰', roles: ['admin'] },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️', roles: ['admin'] },
@@ -71,7 +79,6 @@ function AppContent() {
   const visibleMenu = menuItems.filter(item => item.roles.includes(role))
 
   const renderPage = () => {
-    // Proteção extra: se educador tentar aceder a rota admin via URL
     if (role === 'educador' && ['funcionarios','folha_salarial','configuracoes','usuarios'].includes(activePage)) {
       setActivePage('dashboard')
       return <Dashboard />
@@ -94,7 +101,7 @@ function AppContent() {
         <div style={{padding:20,borderBottom:'1px solid #334155'}}>
           <h1 style={{fontSize:17,fontWeight:'bold',margin:'0 0 12px',color:'#6366f1'}}>Origem Creative</h1>
           <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:12,textAlign:'center',fontWeight:500}}>
-            {role === 'admin' ? ' Administrador' : '👨‍🏫 Educador'}
+            {role === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
           </div>
         </div>
         <nav style={{flex:1,padding:'16px 0'}}>
