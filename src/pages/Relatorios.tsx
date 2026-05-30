@@ -21,7 +21,7 @@ export default function Relatorios({ role }) {
       const inicio = dataInicio ? new Date(dataInicio) : null
       const fim = dataFim ? new Date(dataFim) : null
 
-      //  Segurança: Educador só vê crianças
+      // 🔒 Segurança: Educador só vê crianças
       const moduloReal = isEducador ? 'criancas' : modulo
 
       if (moduloReal === 'criancas') {
@@ -72,6 +72,7 @@ export default function Relatorios({ role }) {
     }
   }
 
+  // ✅ Exportar CSV (Mantido)
   const exportarCSV = () => {
     if (!dados.length) return toast.error('Sem dados para exportar')
     const isFolha = modulo === 'folha'
@@ -105,8 +106,9 @@ export default function Relatorios({ role }) {
     toast.success('CSV exportado com sucesso!')
   }
 
-  const imprimirRelatorio = () => {
-    if (!dados.length) return toast.error('Sem dados para imprimir')
+  // 🖨️ Gerar PDF do Relatório Completo (Lista)
+  const gerarPDFCompleto = () => {
+    if (!dados.length) return toast.error('Sem dados para gerar PDF')
     const isFolha = modulo === 'folha'
     const titulo = isFolha ? 'Folha Salarial' : modulo === 'criancas' ? 'Registo de Crianças' : 'Registo de Funcionários'
     
@@ -166,8 +168,74 @@ export default function Relatorios({ role }) {
     </body></html>`
 
     const win = window.open('', '_blank')
-    if (win) { win.document.write(conteudo); win.document.close(); win.print() }
-    toast.success('Relatório pronto para impressão!')
+    if (win) { 
+      win.document.write(conteudo); 
+      win.document.close(); 
+      // Aguarda carregar e abre impressão
+      setTimeout(() => win.print(), 500); 
+    }
+    toast.success('Janela de PDF aberta!')
+  }
+
+  // 🧾 Imprimir Recibo Individual de Funcionário
+  const imprimirFolhaUnica = (item) => {
+    const funcionario = item.funcionario_nome || item.nome_completo || 'Funcionário'
+    const base = parseFloat(item.salario_base || 0)
+    const inss = parseFloat(item.inss_valor || 0)
+    const outros = parseFloat(item.outros_descontos || 0)
+    const liquido = parseFloat(item.salario_liquido || 0)
+    
+    const conteudo = `<!DOCTYPE html>
+    <html><head><title>Recibo - ${funcionario}</title>
+    <style>
+      @media print { @page { size: A5 landscape; margin: 10mm } }
+      body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; max-width: 700px; margin: 0 auto; color: #1e293b; background: #f8fafc; }
+      .recibo { background: white; padding: 30px; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+      .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #6366f1; padding-bottom: 20px; }
+      .header h2 { margin: 0; color: #0f172a; }
+      .header p { margin: 5px 0 0; color: #64748b; font-size: 12px; }
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+      .info-item label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+      .info-item span { font-size: 15px; font-weight: 500; color: #334155; }
+      .tabela-valores { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      .tabela-valores th { text-align: left; padding: 12px; background: #f1f5f9; color: #475569; font-size: 12px; }
+      .tabela-valores td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+      .total-row { background: #f8fafc; font-weight: bold; }
+      .total-liquido { color: #10b981; font-size: 18px; }
+      .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+    </style></head><body>
+    <div class="recibo">
+      <div class="header">
+        <h2>Recibo de Vencimento</h2>
+        <p>Origem Creative SLJR | ${new Date(item.data_pagamento || Date.now()).toLocaleDateString('pt-PT', {month:'long', year:'numeric'})}</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-item"><label>Funcionário</label><span>${funcionario}</span></div>
+        <div class="info-item"><label>Cargo</label><span>${item.cargo || '-'}</span></div>
+        <div class="info-item"><label>Data de Pagamento</label><span>${new Date(item.data_pagamento || Date.now()).toLocaleDateString('pt-PT')}</span></div>
+      </div>
+
+      <table class="tabela-valores">
+        <thead><tr><th>Descrição</th><th style="text-align:right">Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Salário Base</td><td style="text-align:right">${base.toLocaleString('pt-AO')} Kz</td></tr>
+          ${inss > 0 ? `<tr><td style="color:#ef4444">Desconto INSS</td><td style="text-align:right;color:#ef4444">- ${inss.toLocaleString('pt-AO')} Kz</td></tr>` : ''}
+          ${outros > 0 ? `<tr><td style="color:#ef4444">Outros Descontos</td><td style="text-align:right;color:#ef4444">- ${outros.toLocaleString('pt-AO')} Kz</td></tr>` : ''}
+          <tr class="total-row">
+            <td>VALOR LÍQUIDO A PAGAR</td>
+            <td style="text-align:right" class="total-liquido">${liquido.toLocaleString('pt-AO')} Kz</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer">Documento gerado automaticamente pelo sistema | ${new Date().toLocaleDateString('pt-PT')}</div>
+    </div>
+    <script>window.onload = function(){ window.print(); }</script>
+    </body></html>`
+
+    const win = window.open('', '_blank', 'width=800,height=600')
+    if (win) { win.document.write(conteudo); win.document.close(); }
   }
 
   const limparFiltros = () => { setDataInicio(''); setDataFim(''); setBusca('') }
@@ -182,7 +250,7 @@ export default function Relatorios({ role }) {
         {!isEducador && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={exportarCSV} style={{ padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>📥 Baixar CSV</button>
-            <button onClick={imprimirRelatorio} style={{ padding: '8px 14px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>🖨️ Imprimir</button>
+            <button onClick={gerarPDFCompleto} style={{ padding: '8px 14px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>🖨️ Gerar PDF</button>
           </div>
         )}
       </div>
@@ -253,6 +321,7 @@ export default function Relatorios({ role }) {
                       <th style={{ padding: 12, textAlign: 'right', color: '#94a3b8' }}>INSS</th>
                       <th style={{ padding: 12, textAlign: 'right', color: '#94a3b8' }}>Líquido</th>
                       <th style={{ padding: 12, textAlign: 'left', color: '#94a3b8' }}>Data</th>
+                      <th style={{ padding: 12, textAlign: 'center', color: '#94a3b8' }}>Ações</th>
                     </>
                   ) : (
                     <>
@@ -260,6 +329,7 @@ export default function Relatorios({ role }) {
                       <th style={{ padding: 12, textAlign: 'left', color: '#94a3b8' }}>Tipo</th>
                       <th style={{ padding: 12, textAlign: 'left', color: '#94a3b8' }}>Data</th>
                       <th style={{ padding: 12, textAlign: 'left', color: '#94a3b8' }}>Detalhes</th>
+                      <th style={{ padding: 12, textAlign: 'center', color: '#94a3b8' }}>Ações</th>
                     </>
                   )}
                 </tr>
@@ -275,6 +345,9 @@ export default function Relatorios({ role }) {
                         <td style={{ padding: 10, textAlign: 'right', color: '#f87171' }}>{parseFloat(item.inss_valor||0).toLocaleString('pt-AO')} Kz</td>
                         <td style={{ padding: 10, textAlign: 'right', color: '#10b981', fontWeight: 600 }}>{parseFloat(item.salario_liquido||0).toLocaleString('pt-AO')} Kz</td>
                         <td style={{ padding: 10, color: '#64748b' }}>{new Date(item.data_pagamento || Date.now()).toLocaleDateString('pt-PT')}</td>
+                        <td style={{ padding: 10, textAlign: 'center' }}>
+                          <button onClick={() => imprimirFolhaUnica(item)} title="Imprimir Recibo" style={{ background: '#334155', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', color: '#fff', fontSize: 12 }}>🖨️</button>
+                        </td>
                       </>
                     ) : (
                       <>
@@ -286,6 +359,9 @@ export default function Relatorios({ role }) {
                         </td>
                         <td style={{ padding: 10, color: '#64748b' }}>{new Date(item.data_entrada || item.data_admissao || item.data_pagamento || Date.now()).toLocaleDateString('pt-PT')}</td>
                         <td style={{ padding: 10, color: '#64748b' }}>{item.cargo ? `Cargo: ${item.cargo}` : '-'}</td>
+                        <td style={{ padding: 10, textAlign: 'center' }}>
+                          <button onClick={() => imprimirFolhaUnica(item)} title="Imprimir" style={{ background: '#334155', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', color: '#fff', fontSize: 12 }}>️</button>
+                        </td>
                       </>
                     )}
                   </tr>
