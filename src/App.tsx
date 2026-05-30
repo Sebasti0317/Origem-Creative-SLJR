@@ -84,7 +84,7 @@ function AppContent() {
       return <Dashboard />
     }
     switch(activePage) {
-      case 'dashboard': return <Dashboard />
+      case 'dashboard': return <Dashboard role={role} />  
       case 'criancas': return <Criancas />
       case 'funcionarios': return <Funcionarios />
       case 'folha_salarial': return <FolhaSalarial />

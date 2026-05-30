@@ -1,82 +1,241 @@
-﻿import { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-export default function Dashboard() {
-  const [stats, setStats] = useState({ criancas: 0, ativas: 0, saidas: 0, funcionarios: 0, folhaTotal: 0 })
+export default function Dashboard({ role }) {
+  const [stats, setStats] = useState({
+    criancas: 0,
+    criancasAtivas: 0,
+    funcionarios: 0,
+    folhaMes: 0,
+    aniversariantes: [],
+    recentes: []
+  })
   const [carregando, setCarregando] = useState(true)
-  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(new Date().toLocaleTimeString('pt-PT'))
+  const isEducador = role === 'educador'
 
-  useEffect(() => { carregarEstatisticas() }, [])
+  useEffect(() => { carregarDashboard() }, [isEducador])
 
-  const carregarEstatisticas = async () => {
+  const carregarDashboard = async () => {
     setCarregando(true)
     try {
-      // 1. Crianças
-      const { data: criancas } = await supabase.from('criancas').select('data_saida')
-      const totalC = criancas?.length || 0
-      const ativas = criancas?.filter(c => !c.data_saida).length || 0
-      const saidas = criancas?.filter(c => c.data_saida).length || 0
+      // 1. Estatísticas de Crianças (Todos veem)
+      const { count: totalCriancas } = await supabase.from('criancas').select('*', { count: 'exact', head: true })
+      const { count: criancasAtivas } = await supabase.from('criancas').select('*', { count: 'exact', head: true }).eq('ativo', true)
+      
+      // 2. Aniversariantes do Mês (Todos veem)
+      const mesAtual = new Date().getMonth()
+      const { data: anivs } = await supabase.from('criancas').select('nome_completo, data_nascimento').not('data_nascimento', 'is', null)
+      const aniversariantes = (anivs || [])
+        .filter(c => new Date(c.data_nascimento).getMonth() === mesAtual)
+        .map(c => ({
+          nome: c.nome_completo,
+          dia: new Date(c.data_nascimento).getDate(),
+          idade: new Date().getFullYear() - new Date(c.data_nascimento).getFullYear()
+        }))
+        .sort((a, b) => a.dia - b.dia)
+        .slice(0, 5)
 
-      // 2. Funcionários
-      const { count: totalF } = await supabase.from('funcionarios').select('*', { count: 'exact', head: true })
-
-      // 3. Folha Salarial (Soma dos líquidos)
-      const { data: folha } = await supabase.from('folha_salarial').select('salario_liquido')
-      const totalFolha = folha?.reduce((acc, curr) => acc + (parseFloat(curr.salario_liquido) || 0), 0) || 0
+      // 3. Dados exclusivos para Admin
+      let funcionarios = 0, folhaMes = 0, recentes = []
+      if (!isEducador) {
+        // Total funcionários
+        const { count: totalFunc } = await supabase.from('funcionarios').select('*', { count: 'exact', head: true })
+        funcionarios = totalFunc || 0
+        
+        // Folha do mês atual
+        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+        const { data: folha } = await supabase.from('folha_salarial')
+          .select('salario_liquido')
+          .gte('data_pagamento', inicioMes)
+        folhaMes = folha?.reduce((acc, i) => acc + parseFloat(i.salario_liquido || 0), 0) || 0
+        
+        // Atividades recentes (últimos 5 registos de qualquer tabela)
+        const [ultimasCriancas, ultimosFunc] = await Promise.all([
+          supabase.from('criancas').select('nome_completo, created_at').order('created_at', { ascending: false }).limit(3),
+          supabase.from('funcionarios').select('nome_completo, created_at').order('created_at', { ascending: false }).limit(3)
+        ])
+        recentes = [
+          ...(ultimasCriancas.data || []).map(c => ({ tipo: 'Criança', nome: c.nome_completo, data: c.created_at })),
+          ...(ultimosFunc.data || []).map(f => ({ tipo: 'Funcionário', nome: f.nome_completo, data: f.created_at }))
+        ].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 5)
+      }
 
       setStats({
-        criancas: totalC,
-        ativas,
-        saidas,
-        funcionarios: totalF || 0,
-        folhaTotal: totalFolha
+        criancas: totalCriancas || 0,
+        criancasAtivas: criancasAtivas || 0,
+        funcionarios,
+        folhaMes,
+        aniversariantes,
+        recentes
       })
-      setUltimaAtualizacao(new Date().toLocaleTimeString('pt-PT'))
     } catch (e) {
-      console.error('Erro ao carregar dashboard:', e)
+      console.error('Erro dashboard:', e)
     } finally {
       setCarregando(false)
     }
   }
 
-  const formatMoney = (v) => v.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  // Componente Card de Estatística
+  const StatCard = ({ titulo, valor, subtitulo, cor, icone }) => (
+    <div style={{ 
+      background: '#1e293b', padding: 20, borderRadius: 12, border: '1px solid #334155',
+      display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{ 
+        width: 50, height: 50, borderRadius: 10, 
+        background: `${cor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 24, color: cor 
+      }}>{icone}</div>
+      <div>
+        <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>{titulo}</div>
+        <div style={{ fontSize: 24, fontWeight: 'bold', color: '#e2e8f0' }}>{valor}</div>
+        {subtitulo && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{subtitulo}</div>}
+      </div>
+    </div>
+  )
 
   return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <div>
-          <h2 style={{fontSize:28,fontWeight:'bold',margin:0}}>Dashboard</h2>
-          <p style={{fontSize:14,color:'#94a3b8',margin:'4px 0 0'}}>Visão geral do centro • Atualizado às {ultimaAtualizacao}</p>
-        </div>
-        <button onClick={carregarEstatisticas} disabled={carregando} style={{padding:'10px 18px',background:'#334155',color:'#e2e8f0',border:'none',borderRadius:8,cursor:'pointer',fontSize:13}}>
-          {carregando ? 'A atualizar...' : '🔄 Atualizar Dados'}
-        </button>
+    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 'bold', margin: 0, color: '#e2e8f0' }}>Dashboard</h1>
+        <p style={{ color: '#94a3b8', margin: '4px 0 0', fontSize: 14 }}>Visão geral do centro • {new Date().toLocaleDateString('pt-PT')}</p>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:16,marginBottom:24}}>
-        <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155',borderLeft:'4px solid #6366f1'}}>
-          <h3 style={{fontSize:14,color:'#94a3b8',margin:'0 0 8px'}}>Total Crianças</h3>
-          <p style={{fontSize:32,fontWeight:'bold',color:'#6366f1',margin:0}}>{stats.criancas}</p>
-        </div>
-        <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155',borderLeft:'4px solid #10b981'}}>
-          <h3 style={{fontSize:14,color:'#94a3b8',margin:'0 0 8px'}}>Ativas no Centro</h3>
-          <p style={{fontSize:32,fontWeight:'bold',color:'#10b981',margin:0}}>{stats.ativas}</p>
-        </div>
-        <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155',borderLeft:'4px solid #ef4444'}}>
-          <h3 style={{fontSize:14,color:'#94a3b8',margin:'0 0 8px'}}>Com Saída</h3>
-          <p style={{fontSize:32,fontWeight:'bold',color:'#ef4444',margin:0}}>{stats.saidas}</p>
-        </div>
-        <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155',borderLeft:'4px solid #f59e0b'}}>
-          <h3 style={{fontSize:14,color:'#94a3b8',margin:'0 0 8px'}}>Funcionários</h3>
-          <p style={{fontSize:32,fontWeight:'bold',color:'#f59e0b',margin:0}}>{stats.funcionarios}</p>
-        </div>
-      </div>
+      {carregando ? (
+        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>A carregar estatísticas...</div>
+      ) : (
+        <>
+          {/* Cards de Estatísticas */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
+            <StatCard 
+              titulo="Total de Crianças" 
+              valor={stats.criancas} 
+              subtitulo={`${stats.criancasAtivas} ativas no momento`}
+              cor="#6366f1" 
+              icone="👶" 
+            />
+            {!isEducador && (
+              <>
+                <StatCard 
+                  titulo="Funcionários" 
+                  valor={stats.funcionarios} 
+                  subtitulo="Equipa ativa"
+                  cor="#10b981" 
+                  icone="👥" 
+                />
+                <StatCard 
+                  titulo="Folha Salarial (Mês)" 
+                  valor={`${stats.folhaMes.toLocaleString('pt-AO')} Kz`} 
+                  subtitulo="Total líquido pago"
+                  cor="#f59e0b" 
+                  icone="💰" 
+                />
+              </>
+            )}
+            <StatCard 
+              titulo="Aniversariantes" 
+              valor={stats.aniversariantes.length} 
+              subtitulo="Este mês"
+              cor="#ec4899" 
+              icone="🎂" 
+            />
+          </div>
 
-      <div style={{background:'#1e293b',padding:20,borderRadius:12,border:'1px solid #334155'}}>
-        <h3 style={{fontSize:18,fontWeight:'bold',margin:'0 0 12px'}}>💰 Resumo Financeiro (Folha)</h3>
-        <p style={{fontSize:24,fontWeight:'bold',color:'#10b981',margin:0}}>{formatMoney(stats.folhaTotal)} Kz</p>
-        <p style={{fontSize:13,color:'#64748b',marginTop:4}}>Soma dos salários líquidos registados</p>
-      </div>
+          {/* Secção Principal: 2 Colunas */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+            
+            {/* Aniversariantes do Mês */}
+            <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
+              <div style={{ padding: 16, borderBottom: '1px solid #334155', background: '#0f172a' }}>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#e2e8f0' }}>🎂 Aniversariantes</h3>
+              </div>
+              <div style={{ padding: 16 }}>
+                {stats.aniversariantes.length === 0 ? (
+                  <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>Nenhum aniversário este mês.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {stats.aniversariantes.map((a, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#0f172a', borderRadius: 8 }}>
+                        <div style={{ 
+                          width: 36, height: 36, borderRadius: '50%', 
+                          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontWeight: 'bold', fontSize: 13
+                        }}>{a.dia}</div>
+                        <div>
+                          <div style={{ fontWeight: 500, color: '#e2e8f0' }}>{a.nome}</div>
+                          <div style={{ fontSize: 12, color: '#94a3b8' }}>Faz {a.idade} anos</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Atividades Recentes (Apenas Admin) */}
+            {!isEducador && (
+              <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
+                <div style={{ padding: 16, borderBottom: '1px solid #334155', background: '#0f172a' }}>
+                  <h3 style={{ margin: 0, fontSize: 16, color: '#e2e8f0' }}>📋 Atividades Recentes</h3>
+                </div>
+                <div style={{ padding: 16 }}>
+                  {stats.recentes.length === 0 ? (
+                    <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>Sem atividades recentes.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {stats.recentes.map((at, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#0f172a', borderRadius: 8 }}>
+                          <div style={{ 
+                            width: 32, height: 32, borderRadius: 6, 
+                            background: at.tipo === 'Criança' ? '#6366f120' : '#10b98120',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: at.tipo === 'Criança' ? '#6366f1' : '#10b981', fontSize: 14
+                          }}>{at.tipo === 'Criança' ? '👶' : '👤'}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 500, color: '#e2e8f0', fontSize: 13 }}>{at.nome}</div>
+                            <div style={{ fontSize: 11, color: '#64748b' }}>Novo registo de {at.tipo}</div>
+                          </div>
+                          <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                            {new Date(at.data).toLocaleDateString('pt-PT')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Acesso Rápido */}
+            <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden', gridColumn: '1 / -1' }}>
+              <div style={{ padding: 16, borderBottom: '1px solid #334155', background: '#0f172a' }}>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#e2e8f0' }}>⚡ Acesso Rápido</h3>
+              </div>
+              <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+                <button style={{ padding: 14, background: '#6366f1', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span>👶</span> Nova Criança
+                </button>
+                {!isEducador && (
+                  <>
+                    <button style={{ padding: 14, background: '#10b981', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <span>👤</span> Novo Funcionário
+                    </button>
+                    <button style={{ padding: 14, background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <span>💰</span> Gerar Folha
+                    </button>
+                  </>
+                )}
+                <button style={{ padding: 14, background: '#334155', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span>📊</span> Ver Relatórios
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </>
+      )}
     </div>
   )
 }
