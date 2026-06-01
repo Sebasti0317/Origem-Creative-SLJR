@@ -27,8 +27,8 @@ export default function Login() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', padding: 20 }}>
       <div style={{ background: '#1e293b', padding: 32, borderRadius: 16, border: '1px solid #334155', width: '100%', maxWidth: 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>🔐</div>
-          <h1 style={{ fontSize: 22, fontWeight: 'bold', margin: '0 0 8px', color: '#e2e8f0' }}>Origem Creative SLJR</h1>
+          {/* ✅ LOGO AQUI */}
+          <img src="/logo.png" alt="Origem Creative SLJR" style={{ width: '200px', marginBottom: '10px' }} />
           <p style={{ color: '#64748b', margin: 0, fontSize: 13 }}>Acesso restrito a pessoal autorizado</p>
         </div>
 

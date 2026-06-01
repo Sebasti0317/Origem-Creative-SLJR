@@ -38,11 +38,10 @@ function AppContent() {
 
   const fetchUserRole = async (user) => {
     try {
-      // ✅ APENAS ESTES EMAILS SÃO ADMINS (remove sebasjrkeba@gmail.com)
+      // ✅ ADMINS HARDCODED (emails autorizados)
       const adminEmails = [
         'admin@origem.sljr',
         'admin@teucentro.com'
-        // Adiciona aqui outros emails de admin se necessário
       ]
       
       if (adminEmails.includes(user.email)) {
@@ -81,25 +80,26 @@ function AppContent() {
   const renderPage = () => {
     if (role === 'educador' && ['funcionarios','folha_salarial','configuracoes','usuarios'].includes(activePage)) {
       setActivePage('dashboard')
-      return <Dashboard />
+      return <Dashboard role={role} />
     }
     switch(activePage) {
-      case 'dashboard': return <Dashboard role={role} />  
+      case 'dashboard': return <Dashboard role={role} />
       case 'criancas': return <Criancas />
       case 'funcionarios': return <Funcionarios />
       case 'folha_salarial': return <FolhaSalarial />
       case 'relatorios': return <Relatorios role={role} />
       case 'configuracoes': return <Configuracoes />
       case 'usuarios': return <Usuarios />
-      default: return <Dashboard />
+      default: return <Dashboard role={role} />
     }
   }
 
   return (
     <div style={{minHeight:'100vh',background:'#0f172a',color:'#e2e8f0',display:'flex'}}>
       <aside style={{width:240,background:'#1e293b',borderRight:'1px solid #334155',display:'flex',flexDirection:'column'}}>
-        <div style={{padding:20,borderBottom:'1px solid #334155'}}>
-          <h1 style={{fontSize:17,fontWeight:'bold',margin:'0 0 12px',color:'#6366f1'}}>Origem Creative</h1>
+        <div style={{padding:20,borderBottom:'1px solid #334155', textAlign:'center'}}>
+          {/* ✅ LOGO OFICIAL */}
+          <img src="/logo.png" alt="Origem Creative" style={{ width: '160px', marginBottom: '10px' }} />
           <div style={{padding:'6px 10px',background:'#0f172a',border:'1px solid #475569',borderRadius:6,color:'#fff',fontSize:12,textAlign:'center',fontWeight:500}}>
             {role === 'admin' ? '👑 Administrador' : '👨‍🏫 Educador'}
           </div>
