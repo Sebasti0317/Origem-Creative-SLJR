@@ -26,26 +26,24 @@
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
+        .logo-img {
+            width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+        }
         .header h1 {
             color: #0f172a;
             font-size: 28px;
             margin-bottom: 10px;
         }
+        .header h2 {
+            color: #6366f1;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
         .header p {
             color: #64748b;
             font-size: 14px;
-        }
-        .logo-placeholder {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 48px;
         }
         h2 {
             color: #6366f1;
@@ -153,6 +151,32 @@
             color: #94a3b8;
             font-size: 12px;
         }
+        .developer-contact {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .developer-contact h3 {
+            color: white;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .developer-contact p {
+            margin: 8px 0;
+            text-align: center;
+        }
+        .developer-contact a {
+            color: #fbbf24;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .developer-contact a:hover {
+            text-decoration: underline;
+        }
         .toc {
             background: #f8fafc;
             padding: 20px;
@@ -200,7 +224,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo-placeholder">⭐</div>
+        <img src="/logo.png" alt="Origem Creative SLJR" class="logo-img" />
         <h1>GUIA DE UTILIZAÇÃO</h1>
         <h2>Sistema de Gestão - Origem Creative SLJR</h2>
         <p>Versão 1.0 | Junho 2026</p>
@@ -218,6 +242,7 @@
             <li><a href="#configuracoes">7. Configurações do Sistema</a></li>
             <li><a href="#backups">8. Backups e Segurança</a></li>
             <li><a href="#problemas">9. Resolução de Problemas</a></li>
+            <li><a href="#suporte">10. Suporte Técnico</a></li>
         </ul>
     </div>
 
@@ -631,24 +656,30 @@
 
     <div class="page-break"></div>
 
-    <h2>📞 CONTACTO DE SUPORTE</h2>
-    <p>Se encontraste um problema não listado aqui:</p>
-    <ol>
-        <li><strong>Documenta o erro:</strong>
-            <ul>
-                <li>O que estavas a fazer?</li>
-                <li>Qual a mensagem de erro exata?</li>
-                <li>Tira um screenshot (Print Screen)</li>
-            </ul>
-        </li>
-        <li><strong>Contacta o administrador do sistema</strong> com:
-            <ul>
-                <li>Descrição do problema</li>
-                <li>Screenshot</li>
-                <li>Hora em que ocorreu</li>
-            </ul>
-        </li>
-    </ol>
+    <h2 id="suporte">10. SUPORTE TÉCNICO</h2>
+    
+    <div class="developer-contact">
+        <h3>👨‍💻 Contacto do Desenvolvedor</h3>
+        <p>Para suporte técnico, dúvidas ou sugestões de melhorias:</p>
+        <p style="font-size: 18px; margin: 15px 0;">
+            📧 Email: <a href="mailto:sebasjrkeba@gmail.com">sebasjrkeba@gmail.com</a>
+        </p>
+        <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
+            Desenvolvido por Sebastião Jr<br>
+            Sistema de Gestão - Origem Creative SLJR<br>
+            © 2026 - Todos os direitos reservados
+        </p>
+    </div>
+
+    <div class="info-box">
+        <strong>Ao contactar o suporte, inclui:</strong>
+        <ul>
+            <li>Descrição detalhada do problema</li>
+            <li>Captura de ecrã (screenshot) do erro</li>
+            <li>Hora em que ocorreu</li>
+            <li>Navegador que estás a usar (Chrome, Edge, Firefox, etc.)</li>
+        </ul>
+    </div>
 
     <h2>✅ CHECKLIST DIÁRIA/SEMANAL</h2>
 
@@ -701,6 +732,7 @@
     <div class="footer">
         <p><strong>📄 Este guia deve ser mantido atualizado sempre que novas funcionalidades forem adicionadas ao sistema.</strong></p>
         <p style="margin-top: 15px;"><strong>Versão:</strong> 1.0 | <strong>Data:</strong> Junho 2026 | <strong>Sistema:</strong> Origem Creative SLJR</p>
+        <p style="margin-top: 10px;"><strong>Desenvolvido por:</strong> Sebastião Jr | <strong>Contacto:</strong> sebasjrkeba@gmail.com</p>
     </div>
 </body>
 </html>
