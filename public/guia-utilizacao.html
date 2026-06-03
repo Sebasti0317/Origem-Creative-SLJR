@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Utilização - Origem Creative SLJR</title>
+    <style>
+        @media print {
+            @page { margin: 2cm; size: A4; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page-break { page-break-before: always; }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #fff;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #0f172a;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .logo-placeholder {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        h2 {
+            color: #6366f1;
+            font-size: 22px;
+            margin: 30px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        h3 {
+            color: #10b981;
+            font-size: 18px;
+            margin: 25px 0 12px;
+        }
+        h4 {
+            color: #334155;
+            font-size: 15px;
+            margin: 20px 0 10px;
+        }
+        p, li {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .success-box {
+            background: #dcfce7;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        th {
+            background: #6366f1;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        code {
+            background: #1e293b;
+            color: #10b981;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        .badge-admin { background: #fef3c7; color: #b45309; }
+        .badge-educ { background: #dbeafe; color: #1d4ed8; }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .toc {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .toc h3 {
+            margin-top: 0;
+            color: #6366f1;
+        }
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        .toc li {
+            padding: 5px 0;
+        }
+        .toc a {
+            color: #334155;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #6366f1;
+            text-decoration: underline;
+        }
+        .checklist {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .checklist-item:before {
+            content: "☐";
+            font-size: 18px;
+            margin-right: 10px;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-placeholder">⭐</div>
+        <h1>GUIA DE UTILIZAÇÃO</h1>
+        <h2>Sistema de Gestão - Origem Creative SLJR</h2>
+        <p>Versão 1.0 | Junho 2026</p>
+    </div>
+
+    <div class="toc">
+        <h3>📋 ÍNDICE</h3>
+        <ul>
+            <li><a href="#acesso">1. Acesso ao Sistema</a></li>
+            <li><a href="#utilizadores">2. Gestão de Utilizadores</a></li>
+            <li><a href="#criancas">3. Gestão de Crianças/Utentes</a></li>
+            <li><a href="#funcionarios">4. Gestão de Funcionários</a></li>
+            <li><a href="#folha">5. Folha Salarial</a></li>
+            <li><a href="#relatorios">6. Relatórios e Exportações</a></li>
+            <li><a href="#configuracoes">7. Configurações do Sistema</a></li>
+            <li><a href="#backups">8. Backups e Segurança</a></li>
+            <li><a href="#problemas">9. Resolução de Problemas</a></li>
+        </ul>
+    </div>
+
+    <h2 id="acesso">1. ACESSO AO SISTEMA</h2>
+    
+    <div class="info-box">
+        <strong>URL de Acesso:</strong> <code>https://origem-creative-sljr.vercel.app</code>
+    </div>
+
+    <h4>Credenciais:</h4>
+    <ul>
+        <li><strong>Email:</strong> Email institucional fornecido</li>
+        <li><strong>Senha:</strong> Senha definida no convite inicial</li>
+    </ul>
+
+    <h4>Tipos de Utilizador:</h4>
+    <ul>
+        <li><span class="badge badge-admin">👑 Administrador</span> Acesso total a todos os módulos</li>
+        <li><span class="badge badge-educ">👨‍🏫 Educador</span> Acesso apenas a Crianças e Relatórios (limitado)</li>
+    </ul>
+
+    <h4>Primeiro Acesso:</h4>
+    <ol>
+        <li>Verifica o email de convite do Supabase</li>
+        <li>Clica em "Accept invitation"</li>
+        <li>Define a tua senha (mínimo 6 caracteres)</li>
+        <li>Faz login com email e senha</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2 id="utilizadores">2. GESTÃO DE UTILIZADORES</h2>
+    <p><span class="badge badge-admin">Apenas Admin</span> Menu lateral → <strong>Utilizadores</strong></p>
+
+    <h3>2.1 Criar Novo Utilizador</h3>
+    
+    <div class="warning-box">
+        <strong>Método Recomendado (Via Supabase):</strong>
+    </div>
+
+    <ol>
+        <li>Acede ao painel Supabase: <code>https://supabase.com/dashboard</code></li>
+        <li>Vai a <strong>Authentication</strong> → <strong>Users</strong></li>
+        <li>Clica em <strong>Invite user</strong></li>
+        <li>Preenche:
+            <ul>
+                <li><strong>Email:</strong> Email institucional do novo utilizador</li>
+                <li><strong>User metadata (JSON):</strong>
+                    <div class="code-block">{"nome": "Nome Completo", "role": "educador"}</div>
+                    <em>(usa "admin" apenas para administradores)</em>
+                </li>
+            </ul>
+        </li>
+        <li>Clica em <strong>Send Invite</strong></li>
+        <li>O utilizador receberá um email para definir a senha</li>
+    </ol>
+
+    <div class="info-box">
+        <strong>Notas Importantes:</strong>
+        <ul>
+            <li>Educadores NÃO veem módulos de Funcionários, Folha Salarial ou Configurações</li>
+            <li>Admins têm acesso ilimitado</li>
+            <li>Cada utilizador deve ter um email único</li>
+        </ul>
+    </div>
+
+    <h3>2.2 Editar/Remover Utilizador</h3>
+    <ol>
+        <li>Em <strong>Utilizadores</strong>, clica nos <code>...</code> ao lado do utilizador</li>
+        <li>Escolhe:
+            <ul>
+                <li><strong>Edit user:</strong> Alterar nome ou role</li>
+                <li><strong>Reset password:</strong> Enviar link de redefinição</li>
+                <li><strong>Delete user:</strong> Remover permanentemente <em>(cuidado!)</em></li>
+            </ul>
+        </li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2 id="criancas">3. GESTÃO DE CRIANÇAS/UTENTES</h2>
+    <p>Menu lateral → <strong>Crianças</strong> <span class="badge badge-admin">Todos</span></p>
+
+    <h3>3.1 Adicionar Nova Criança/Utente</h3>
+    <ol>
+        <li>Clica em <strong>+ Nova Criança</strong> (canto superior direito)</li>
+        <li>Preenche os campos obrigatórios:
+            <ul>
+                <li>✅ <strong>Nome Completo</strong> (obrigatório)</li>
+                <li><strong>Data de Nascimento</strong></li>
+                <li><strong>Data de Entrada</strong></li>
+                <li><strong>Nome do Encarregado</strong></li>
+                <li><strong>Contacto do Encarregado</strong></li>
+                <li><strong>Observações</strong> (informações relevantes)</li>
+                <li><strong>Estado:</strong> Ativo/Inativo</li>
+            </ul>
+        </li>
+        <li>Clica em <strong>Guardar</strong></li>
+    </ol>
+
+    <h3>3.2 Editar Informação</h3>
+    <ol>
+        <li>Na lista de crianças, clica no botão <strong>✏️ Editar</strong> da criança</li>
+        <li>Atualiza os dados necessários</li>
+        <li>Clica em <strong>Guardar Alterações</strong></li>
+    </ol>
+
+    <h3>3.3 Imprimir Ficha Individual</h3>
+    <ol>
+        <li>Vai a <strong>Relatórios</strong> → Módulo <strong>Crianças</strong></li>
+        <li>Usa os filtros para encontrar a criança</li>
+        <li>Clica no botão <strong>📄</strong> na coluna "Ações"</li>
+        <li>A ficha abrirá numa nova janela → Imprime ou guarda como PDF</li>
+    </ol>
+
+    <div class="success-box">
+        <strong>Dica:</strong> A ficha adapta-se automaticamente:
+        <ul>
+            <li>Menores de 18 anos → "Ficha Individual da Criança"</li>
+            <li>Maiores de 18 anos → "Ficha Individual do Utente"</li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2 id="funcionarios">4. GESTÃO DE FUNCIONÁRIOS</h2>
+    <p><span class="badge badge-admin">Apenas Admin</span> Menu lateral → <strong>Funcionários</strong></p>
+
+    <h3>4.1 Adicionar Novo Funcionário</h3>
+    <ol>
+        <li>Clica em <strong>+ Novo Funcionário</strong></li>
+        <li>Preenche:
+            <ul>
+                <li>✅ <strong>Nome Completo</strong> (obrigatório)</li>
+                <li><strong>Cargo/Função</strong></li>
+                <li><strong>Data de Admissão</strong></li>
+                <li><strong>Data de Nascimento</strong></li>
+                <li><strong>Contacto/Telemóvel</strong></li>
+                <li><strong>Email</strong></li>
+                <li><strong>Observações</strong> (notas de RH)</li>
+                <li><strong>Estado:</strong> Ativo/Inativo</li>
+            </ul>
+        </li>
+        <li>Clica em <strong>Guardar</strong></li>
+    </ol>
+
+    <h3>4.2 Imprimir Ficha do Funcionário</h3>
+    <ol>
+        <li>Vai a <strong>Relatórios</strong> → Módulo <strong>Funcionários</strong></li>
+        <li>Localiza o funcionário</li>
+        <li>Clica no botão <strong>📄</strong></li>
+        <li>Imprime ou guarda como PDF</li>
+    </ol>
+
+    <div class="info-box">
+        <strong>A ficha inclui:</strong> Dados pessoais, cargo, admissão, contacto, estado e espaço para assinaturas.
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2 id="folha">5. FOLHA SALARIAL</h2>
+    <p><span class="badge badge-admin">Apenas Admin</span> Menu lateral → <strong>Folha Salarial</strong></p>
+
+    <h3>5.1 Processar Folha Mensal</h3>
+    <ol>
+        <li>Clica em <strong>+ Novo Registo Salarial</strong></li>
+        <li>Seleciona o <strong>Funcionário</strong> (lista dropdown)</li>
+        <li>Preenche os valores:
+            <ul>
+                <li><strong>Salário Base</strong> (obrigatório)</li>
+                <li><strong>Subsídio de Férias</strong> (se aplicável)</li>
+                <li><strong>Subsídio de Natal</strong> (se aplicável)</li>
+                <li><strong>Outros Abonos/Bónus</strong></li>
+                <li><strong>Desconto INSS</strong> (calculado automaticamente ou manual)</li>
+                <li><strong>Outros Descontos/IRS</strong></li>
+            </ul>
+        </li>
+        <li>O sistema calcula automaticamente o <strong>Salário Líquido</strong></li>
+        <li>Define a <strong>Data de Pagamento</strong></li>
+        <li>Clica em <strong>Guardar</strong></li>
+    </ol>
+
+    <h3>5.2 Imprimir Recibo Individual</h3>
+    <ol>
+        <li>Vai a <strong>Relatórios</strong> → Módulo <strong>Folha Salarial</strong></li>
+        <li>Filtra por funcionário ou período</li>
+        <li>Clica no botão <strong>🖨️</strong> ao lado do registo</li>
+        <li>O recibo abrirá formatado (A5 horizontal)</li>
+        <li>Imprime ou guarda como PDF</li>
+    </ol>
+
+    <div class="success-box">
+        <strong>O recibo inclui:</strong>
+        <ul>
+            <li>Nome da instituição (das configurações)</li>
+            <li>Funcionário, cargo, mês/ano</li>
+            <li>Detalhe de vencimentos e descontos</li>
+            <li>Valor líquido destacado</li>
+            <li>Linhas para assinaturas</li>
+        </ul>
+    </div>
+
+    <h3>5.3 Visualizar Resumo do Mês</h3>
+    <p>No topo da página <strong>Folha Salarial</strong>, vês 3 cards:</p>
+    <ul>
+        <li>💰 <strong>Salário Base Total</strong></li>
+        <li>📉 <strong>Total Descontos</strong></li>
+        <li>✅ <strong>Salário Líquido Total</strong></li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2 id="relatorios">6. RELATÓRIOS E EXPORTAÇÕES</h2>
+    <p>Menu lateral → <strong>Relatórios</strong></p>
+
+    <h3>6.1 Tipos de Relatórios Disponíveis</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Módulo</th>
+                <th>Educador</th>
+                <th>Admin</th>
+                <th>Funcionalidades</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Crianças</strong></td>
+                <td>✅</td>
+                <td>✅</td>
+                <td>Lista completa, filtros, exportação</td>
+            </tr>
+            <tr>
+                <td><strong>Funcionários</strong></td>
+                <td>❌</td>
+                <td>✅</td>
+                <td>Apenas admin</td>
+            </tr>
+            <tr>
+                <td><strong>Folha Salarial</strong></td>
+                <td>❌</td>
+                <td>✅</td>
+                <td>Apenas admin</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>6.2 Como Gerar Relatório</h3>
+    <ol>
+        <li>Seleciona o <strong>Módulo</strong> (dropdown no topo)</li>
+        <li>Aplica <strong>Filtros</strong> (opcionais):
+            <ul>
+                <li><strong>De/Até:</strong> Período específico</li>
+                <li><strong>Pesquisar:</strong> Nome ou cargo</li>
+            </ul>
+        </li>
+        <li>Clica em:
+            <ul>
+                <li><strong>📥 Baixar CSV:</strong> Para Excel/folha de cálculo</li>
+                <li><strong>🖨️ Gerar PDF:</strong> Lista completa formatada para impressão</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>6.3 Imprimir Registo Individual</h3>
+    <p>Cada linha da tabela tem um botão de ação:</p>
+    <ul>
+        <li><strong>Crianças:</strong> 📄 → Ficha individual</li>
+        <li><strong>Funcionários:</strong> 📄 → Ficha de funcionário</li>
+        <li><strong>Folha Salarial:</strong> 🖨️ → Recibo salarial</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2 id="configuracoes">7. CONFIGURAÇÕES DO SISTEMA</h2>
+    <p><span class="badge badge-admin">Apenas Admin</span> Menu lateral → <strong>Configurações</strong></p>
+
+    <h3>7.1 Dados da Instituição</h3>
+    <ol>
+        <li>Vai a <strong>Configurações</strong></li>
+        <li>Atualiza:
+            <ul>
+                <li><strong>Nome da Instituição:</strong> Aparece em todos os documentos impressos</li>
+                <li><strong>Morada</strong> (opcional)</li>
+                <li><strong>NIF</strong> (opcional)</li>
+                <li><strong>Contacto Geral</strong> (opcional)</li>
+            </ul>
+        </li>
+        <li>Clica em <strong>Guardar Alterações</strong></li>
+    </ol>
+
+    <div class="warning-box">
+        <strong>Importante:</strong> O nome da instituição aparece em:
+        <ul>
+            <li>Recibos salariais</li>
+            <li>Fichas de crianças/utentes</li>
+            <li>Fichas de funcionários</li>
+            <li>Relatórios em PDF</li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2 id="backups">8. BACKUPS E SEGURANÇA</h2>
+
+    <h3>8.1 Backup Manual (Recomendado Semanalmente)</h3>
+
+    <h4>Método 1: Exportar CSV de Cada Tabela</h4>
+    <ol>
+        <li>Vai a <strong>Relatórios</strong></li>
+        <li>Para cada módulo (Crianças, Funcionários, Folha):
+            <ul>
+                <li>Aplica filtro "De" (data mais antiga) e "Até" (hoje)</li>
+                <li>Clica em <strong>📥 Baixar CSV</strong></li>
+                <li>Guarda numa pasta organizada (ex: <code>Backup_2026-06-04</code>)</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Método 2: Via Supabase (Completo)</h4>
+    <ol>
+        <li>Acede <code>https://supabase.com/dashboard</code></li>
+        <li>Vai a <strong>Table Editor</strong></li>
+        <li>Para cada tabela:
+            <ul>
+                <li>Clica em <code>...</code> → <strong>Export data</strong> → <strong>CSV</strong></li>
+                <li>Guarda localmente</li>
+            </ul>
+        </li>
+    </ol>
+
+    <div class="success-box">
+        <strong>Frequência Recomendada:</strong>
+        <ul>
+            <li>✅ <strong>Semanal:</strong> Se houver muitos registos novos</li>
+            <li>✅ <strong>Mensal:</strong> Mínimo obrigatório</li>
+        </ul>
+    </div>
+
+    <h3>8.2 Segurança de Dados</h3>
+
+    <h4>Boas Práticas:</h4>
+    <ul>
+        <li>🔒 Nunca partilhes senhas</li>
+        <li>🔒 Usa senhas fortes (mínimo 8 caracteres, letras + números)</li>
+        <li>🔒 Faz logout sempre que terminares (botão "Terminar Sessão")</li>
+        <li>🔒 Não deixes o computador desbloqueado com o sistema aberto</li>
+    </ul>
+
+    <h4>Níveis de Acesso:</h4>
+    <ul>
+        <li><strong>Educadores:</strong> Só veem crianças (não acedem a dados financeiros)</li>
+        <li><strong>Admins:</strong> Acesso total, mas com responsabilidade</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2 id="problemas">9. RESOLUÇÃO DE PROBLEMAS</h2>
+
+    <h3>Problema Comum: "Não consigo entrar"</h3>
+    <div class="warning-box">
+        <strong>Causas possíveis:</strong>
+        <ul>
+            <li>❌ Email ou senha incorretos</li>
+            <li>❌ Email ainda não confirmado</li>
+            <li>❌ Conta desativada</li>
+        </ul>
+    </div>
+    <p><strong>Solução:</strong></p>
+    <ol>
+        <li>Verifica se o email está correto (sem espaços)</li>
+        <li>Clica em "Esqueci a senha" no login</li>
+        <li>Verifica o email (incluindo spam)</li>
+        <li>Se não receberes, contacta o admin para reenviar convite</li>
+    </ol>
+
+    <h3>Problema: "Não vejo o botão X"</h3>
+    <p><strong>Causa:</strong> Provavelmente estás logado como <strong>Educador</strong></p>
+    <p><strong>Solução:</strong></p>
+    <ul>
+        <li>Educadores só veem: Dashboard, Crianças, Relatórios (crianças)</li>
+        <li>Para aceder a Funcionários/Folha, precisas de conta <strong>Admin</strong></li>
+        <li>Contacta o administrador para verificar a tua role</li>
+    </ul>
+
+    <h3>Problema: "A imagem/logo não aparece"</h3>
+    <p><strong>Solução:</strong></p>
+    <ol>
+        <li>Faz <strong>Hard Refresh</strong>: <code>Ctrl + Shift + R</code> (Windows) ou <code>Cmd + Shift + R</code> (Mac)</li>
+        <li>Limpa o cache do browser</li>
+        <li>Tenta noutro browser (Chrome, Edge, Firefox)</li>
+    </ol>
+
+    <h3>Problema: "Erro ao imprimir PDF"</h3>
+    <p><strong>Solução:</strong></p>
+    <ol>
+        <li>Verifica se o popup blocker está desativado</li>
+        <li>Permite popups para o site <code>origem-creative-sljr.vercel.app</code></li>
+        <li>Tenta noutro browser</li>
+        <li>Se o erro persistir, exporta em CSV como alternativa</li>
+    </ol>
+
+    <h3>Problema: "Dados não aparecem no relatório"</h3>
+    <p><strong>Verifica:</strong></p>
+    <ol>
+        <li>✅ Os filtros de data estão corretos?</li>
+        <li>✅ O registo foi guardado corretamente?</li>
+        <li>✅ Tenta limpar filtros (botão "Limpar")</li>
+        <li>✅ Faz refresh da página</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2>📞 CONTACTO DE SUPORTE</h2>
+    <p>Se encontraste um problema não listado aqui:</p>
+    <ol>
+        <li><strong>Documenta o erro:</strong>
+            <ul>
+                <li>O que estavas a fazer?</li>
+                <li>Qual a mensagem de erro exata?</li>
+                <li>Tira um screenshot (Print Screen)</li>
+            </ul>
+        </li>
+        <li><strong>Contacta o administrador do sistema</strong> com:
+            <ul>
+                <li>Descrição do problema</li>
+                <li>Screenshot</li>
+                <li>Hora em que ocorreu</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>✅ CHECKLIST DIÁRIA/SEMANAL</h2>
+
+    <h3>Diário (Educadores):</h3>
+    <div class="checklist">
+        <div class="checklist-item">Verificar presenças das crianças</div>
+        <div class="checklist-item">Atualizar observações relevantes</div>
+        <div class="checklist-item">Imprimir fichas se necessário</div>
+    </div>
+
+    <h3>Semanal (Admin):</h3>
+    <div class="checklist">
+        <div class="checklist-item">Verificar novos registos</div>
+        <div class="checklist-item">Processar folha salarial (final do mês)</div>
+        <div class="checklist-item">Fazer backup CSV de todas as tabelas</div>
+        <div class="checklist-item">Verificar se há utilizadores inativos para remover</div>
+    </div>
+
+    <h3>Mensal (Admin):</h3>
+    <div class="checklist">
+        <div class="checklist-item">Processar folha salarial completa</div>
+        <div class="checklist-item">Imprimir recibos para todos os funcionários</div>
+        <div class="checklist-item">Gerar relatório mensal de crianças ativas</div>
+        <div class="checklist-item">Backup completo via Supabase</div>
+    </div>
+
+    <h2>🎓 DICAS RÁPIDAS</h2>
+
+    <h4>Atalhos de Teclado:</h4>
+    <ul>
+        <li><code>Ctrl + Shift + R</code> → Hard refresh (forçar atualizar página)</li>
+        <li><code>Ctrl + P</code> → Imprimir (quando num relatório)</li>
+        <li><code>Ctrl + F</code> → Pesquisar na página</li>
+    </ul>
+
+    <h4>Impressão Profissional:</h4>
+    <ul>
+        <li>Sempre usa "Gerar PDF" em vez de imprimir direto da tabela</li>
+        <li>Os PDFs gerados têm formatação otimizada para A4</li>
+        <li>Guarda sempre uma cópia digital antes de imprimir em papel</li>
+    </ul>
+
+    <h4>Organização:</h4>
+    <ul>
+        <li>Nomeia os ficheiros PDF com data: <code>Recibo_Joao_Silva_Junho_2026.pdf</code></li>
+        <li>Cria pastas por mês/ano para organização</li>
+        <li>Mantém backups em 2 locais diferentes (PC + Pen/Cloud)</li>
+    </ul>
+
+    <div class="footer">
+        <p><strong>📄 Este guia deve ser mantido atualizado sempre que novas funcionalidades forem adicionadas ao sistema.</strong></p>
+        <p style="margin-top: 15px;"><strong>Versão:</strong> 1.0 | <strong>Data:</strong> Junho 2026 | <strong>Sistema:</strong> Origem Creative SLJR</p>
+    </div>
+</body>
+</html>
