@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origem Creative SLJR - Apresentação do Sistema</title>
+    <style>
+        @media print {
+            @page { margin: 2cm; size: A4; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #fff;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+        }
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        h1 {
+            color: #0f172a;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        h2 {
+            color: #6366f1;
+            font-size: 24px;
+            margin: 35px 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        h3 {
+            color: #10b981;
+            font-size: 20px;
+            margin: 28px 0 14px;
+        }
+        h4 {
+            color: #334155;
+            font-size: 16px;
+            margin: 22px 0 12px;
+        }
+        p, li {
+            margin: 12px 0;
+            text-align: justify;
+            font-size: 14px;
+        }
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 18px;
+        }
+        li {
+            margin: 10px 0;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 18px;
+            margin: 22px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .success-box {
+            background: #dcfce7;
+            border-left: 4px solid #10b981;
+            padding: 18px;
+            margin: 22px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .highlight-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 22px 0;
+            font-size: 13px;
+        }
+        th {
+            background: #6366f1;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .badge-admin { background: #fef3c7; color: #b45309; }
+        .badge-educ { background: #dbeafe; color: #1d4ed8; }
+        .tech-stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .tech-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #6366f1;
+        }
+        .tech-item strong {
+            color: #6366f1;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 45px;
+            padding-top: 25px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .footer strong {
+            color: #0f172a;
+        }
+        .quote {
+            font-style: italic;
+            color: #475569;
+            border-left: 4px solid #10b981;
+            padding-left: 20px;
+            margin: 25px 0;
+            font-size: 15px;
+        }
+        .checkmark {
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">⭐</div>
+        <h1>ORIGEM CREATIVE SLJR</h1>
+        <p class="subtitle">Sistema de Gestão de Centro de Acolhimento</p>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 10px;">Versão 1.0.0 | 2026</p>
+    </div>
+
+    <div class="highlight-box">
+        <h3>📋 O QUE É?</h3>
+        <p style="margin: 0; font-size: 15px;">Uma <strong>plataforma web completa</strong> desenvolvida para digitalizar e automatizar a gestão de centros de acolhimento e instituições sociais. Substitui processos manuais (papel, Excel) por um sistema integrado, seguro e profissional.</p>
+    </div>
+
+    <h2>🎯 PARA QUEM FOI CRIADO?</h2>
+    <ul>
+        <li><span class="checkmark">✅</span>Centros de acolhimento de crianças e jovens</li>
+        <li><span class="checkmark">✅</span>Instituições sociais e IPSS</li>
+        <li><span class="checkmark">✅</span>Lares e residências assistidas</li>
+        <li><span class="checkmark">✅</span>Equipas educativas e administrativas</li>
+    </ul>
+
+    <h2>⚙️ FUNCIONALIDADES PRINCIPAIS</h2>
+
+    <h3>1. Gestão de Crianças/Utentes</h3>
+    <ul>
+        <li>Registo completo com dados pessoais, encarregados de educação e histórico</li>
+        <li>Controlo de entradas/saídas e estado (ativo/inativo)</li>
+        <li>Fichas individuais prontas para impressão</li>
+    </ul>
+
+    <h3>2. Recursos Humanos</h3>
+    <ul>
+        <li>Cadastro de funcionários com cargos e contactos</li>
+        <li>Gestão de admissões e histórico profissional</li>
+        <li>Controlo de permissões por perfil</li>
+    </ul>
+
+    <h3>3. Folha Salarial Automatizada</h3>
+    <ul>
+        <li>Cálculo automático de vencimentos</li>
+        <li>Processamento de subsídios (férias, natal)</li>
+        <li>Descontos fiscais (INSS, IRT) automáticos</li>
+        <li>Recibos individuais em PDF prontos a entregar</li>
+    </ul>
+
+    <h3>4. Dashboard Inteligente</h3>
+    <ul>
+        <li>Métricas em tempo real (total de crianças, funcionários, custos)</li>
+        <li>Aniversariantes do mês</li>
+        <li>Atividades recentes</li>
+        <li>Acesso rápido às funcionalidades principais</li>
+    </ul>
+
+    <h3>5. Relatórios Profissionais</h3>
+    <ul>
+        <li>Exportação em CSV (Excel) e PDF</li>
+        <li>Filtros por período e módulo</li>
+        <li>Relatórios financeiros e operacionais</li>
+    </ul>
+
+    <h3>6. Segurança e Controlo de Acessos</h3>
+    <ul>
+        <li>Dois níveis de permissão: <span class="badge badge-admin">👑 Administrador</span> e <span class="badge badge-educ">👨‍🏫 Educador</span></li>
+        <li>Autenticação segura via Supabase</li>
+        <li>RLS (Row Level Security) para proteção de dados sensíveis</li>
+        <li>Educadores não acedem a dados financeiros</li>
+    </ul>
+
+    <h3>7. Personalização Institucional</h3>
+    <ul>
+        <li>Configuração do nome da instituição, NIF, morada</li>
+        <li>Definição de moeda (Kwanza - Kz)</li>
+        <li>Ajuste de percentagens fiscais (INSS)</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2>💻 TECNOLOGIAS UTILIZADAS</h2>
+    <div class="tech-stack">
+        <div class="tech-item">
+            <strong>Frontend</strong>
+            React 18 + Vite + TailwindCSS
+        </div>
+        <div class="tech-item">
+            <strong>Backend/BaaS</strong>
+            Supabase (Autenticação + Base de Dados)
+        </div>
+        <div class="tech-item">
+            <strong>Deploy</strong>
+            Vercel
+        </div>
+        <div class="tech-item">
+            <strong>Linguagem</strong>
+            JavaScript/TypeScript
+        </div>
+        <div class="tech-item">
+            <strong>Design</strong>
+            Interface Dark Mode moderna e responsiva
+        </div>
+    </div>
+
+    <h2>🌟 PRINCIPAIS VANTAGENS</h2>
+    <ul>
+        <li><span class="checkmark">✅</span><strong>Redução de Tempo</strong> - Automatiza cálculos de folha salarial que antes levavam horas</li>
+        <li><span class="checkmark">✅</span><strong>Zero Erros Manuais</strong> - Cálculos automáticos de INSS, IRT e subsídios</li>
+        <li><span class="checkmark">✅</span><strong>Acesso Remoto</strong> - Funciona em qualquer dispositivo com internet</li>
+        <li><span class="checkmark">✅</span><strong>Dados Seguros</strong> - Base de dados na nuvem com backup manual</li>
+        <li><span class="checkmark">✅</span><strong>Profissionalismo</strong> - Documentos e relatórios com identidade institucional</li>
+        <li><span class="checkmark">✅</span><strong>Escalável</strong> - Pode crescer com novas funcionalidades</li>
+    </ul>
+
+    <h2>🔐 MODELO DE SEGURANÇA</h2>
+    <div class="info-box">
+        <p>O sistema implementa <strong>controlo rigoroso de permissões</strong>:</p>
+        <ul>
+            <li><strong>Administradores:</strong> Acesso total (RH, financeiro, configurações)</li>
+            <li><strong>Educadores:</strong> Apenas gestão de crianças e relatórios operacionais</li>
+            <li>Dados financeiros protegidos por RLS (Row Level Security)</li>
+        </ul>
+    </div>
+
+    <h2>📊 ESTADO ATUAL</h2>
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Detalhe</th>
+        </tr>
+        <tr>
+            <td><strong>Versão</strong></td>
+            <td>1.0.0 (Produção)</td>
+        </tr>
+        <tr>
+            <td><strong>Status</strong></td>
+            <td>✅ Sistema estável e operacional</td>
+        </tr>
+        <tr>
+            <td><strong>Disponibilidade</strong></td>
+            <td>Online 24/7 via Vercel</td>
+        </tr>
+        <tr>
+            <td><strong>URL</strong></td>
+            <td>https://origem-creative-sljr.vercel.app</td>
+        </tr>
+        <tr>
+            <td><strong>Documentação</strong></td>
+            <td>Guias completos de utilização e técnico incluídos</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <h2>🎓 DIFERENCIAIS</h2>
+    <ol>
+        <li><strong>Primeiro Sistema Completo</strong> - Integra RH, financeiro e operacional num só lugar</li>
+        <li><strong>Foco na Realidade Angolana</strong> - Moeda Kwanza, legislação fiscal local (INSS/IRT)</li>
+        <li><strong>Interface Intuitiva</strong> - Design moderno que não requer formação complexa</li>
+        <li><strong>Código Aberto</strong> - Desenvolvido com tecnologias livres e acessíveis</li>
+        <li><strong>Documentação Completa</strong> - Guias de utilização e suporte técnico estruturado</li>
+    </ol>
+
+    <div class="highlight-box">
+        <h3>💡 RESUMO EM UMA FRASE</h3>
+        <p style="margin: 0; font-size: 16px; font-style: italic;">"O Origem Creative SLJR é um ERP especializado para instituições de acolhimento, que automatiza desde a gestão de crianças até à folha salarial, garantindo segurança, conformidade fiscal e profissionalismo na administração diária."</p>
+    </div>
+
+    <h2>📞 CONTACTO E SUPORTE</h2>
+    <div class="success-box">
+        <p><strong>Desenvolvido por:</strong> Sebastião Jr</p>
+        <p><strong>Email:</strong> sebasjrkeba@gmail.com</p>
+        <p><strong>Ano:</strong> 2026</p>
+        <p><strong>Versão:</strong> 1.0.0</p>
+    </div>
+
+    <div class="quote">
+        "Tecnologia a serviço do cuidado. Origem Creative SLJR - Um sistema robusto, seguro e pronto para fazer a diferença."
+    </div>
+
+    <div class="footer">
+        <p><strong>Origem Creative SLJR - Sistema de Gestão de Centro</strong></p>
+        <p>Documento de Apresentação Técnica e Funcional</p>
+        <p style="margin-top: 15px;">© 2026 - Todos os direitos reservados</p>
+        <p>Desenvolvido por Sebastião Jr</p>
+    </div>
+
+    <div class="no-print" style="margin-top: 30px; padding: 20px; background: #f0f9ff; border-radius: 8px; text-align: center;">
+        <p style="margin: 0; color: #0369a1; font-weight: 600;">📄 Para guardar como PDF:</p>
+        <p style="margin: 10px 0 0; font-size: 13px;">Pressione <strong>Ctrl + P</strong> (Windows) ou <strong>Cmd + P</strong> (Mac)<br>
+        Selecione "Guardar como PDF" → Tamanho A4 → Margens: Predefinidas → Guardar</p>
+    </div>
+</body>
+</html>
