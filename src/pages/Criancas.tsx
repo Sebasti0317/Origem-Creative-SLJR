@@ -109,7 +109,7 @@ export default function Criancas() {
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <h2 style={{fontSize:26,fontWeight:'bold',margin:0}}>Crianças (Supabase)</h2>
+        <h2 style={{fontSize:26,fontWeight:'bold',margin:0}}>Crianças</h2>
         <button onClick={()=>setShowForm(!showForm)} disabled={carregando} style={{padding:'10px 18px',background:showForm?'#64748b':'#6366f1',color:'#fff',border:'none',borderRadius:8,cursor:'pointer'}}>{showForm?'Cancelar':'+ Nova'}</button>
       </div>
 
